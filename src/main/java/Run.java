@@ -1,3 +1,5 @@
+import java.io.File;
+
 /**
  * @ClassName: Run
  * @Description:
@@ -7,14 +9,30 @@
 
 public class Run {
     public static void main(String[] args) {
-        for (char i = 'a'; i <= 'z'; i++) {
-            String dir = i + "";
-            FileHTMLParser companies = new FileHTMLParser(dir);
-            try {
-                companies.readFile();
-                companies.parseFile();
-            } catch (Exception e) {
-                e.printStackTrace();
+        String filePath = Run.class.getClassLoader().getResource("p").getPath();
+
+        for (char i = 'a'; i <= 'a'; i++) {
+            filePath += "/" + i;
+            File dir = new File(filePath);
+            if (dir.exists()) {
+                String[] filenames = dir.list();
+                if (filenames == null || filenames.length == 0)
+                    continue;
+                for (String filename: filenames) {
+                    try {
+                        String companyName = filename.substring(0, filename.indexOf(".html"));
+
+                        FileHTMLParser parser = new FileHTMLParser(companyName, filePath + "/" + filename);
+                        parser.parseFile();
+
+                        FileCSVWriter writer = new FileCSVWriter(companyName,
+                                parser.getAttributes(), parser.getValues());
+                        writer.saveFile();
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
     }

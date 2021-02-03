@@ -15,23 +15,31 @@ import java.util.*;
  */
 public class FileHTMLParser {
     private String inputFilename;
-    private File inputFile;
+    private String inputFilePath;
+    private List<String> attributes;
+    private List<String> values;
 
-    public final Set<String> DUPLICATED_ATTRIBUTE_SET = new HashSet<String>(Arrays.asList(
+
+    private final Set<String> DUPLICATED_ATTRIBUTE_SET = new HashSet<String>(Arrays.asList(
             "Daily Volume", "52-Week Change", "Earnings",
             "Most recent quarter", "Shares Short"));
 
-    FileHTMLParser(String inputFilename) {
+    FileHTMLParser(String inputFilename, String inputFilePath) {
         this.inputFilename = inputFilename;
-        this.inputFile = null;
+        this.inputFilePath = inputFilePath;
+
+        // Add an attribute
+        this.attributes = new ArrayList<String>();
+        this.attributes.add("Company");
+
+        // Value == company name (without .html)
+        this.values = new ArrayList<String>();
+        this.values.add(inputFilename);
     }
 
-    public void readFile() throws NullPointerException {
-        String filePath = FileHTMLParser.class.getClassLoader().getResource(inputFilename).getPath();
-        this.inputFile = new File(filePath);
-    }
 
     public void parseFile() throws IOException {
+        File inputFile = new File(inputFilePath);
         Document document = Jsoup.parse(inputFile, "UTF-8", "http://biz.yahoo.com/");
 
         // The middle section of the table
@@ -45,16 +53,25 @@ public class FileHTMLParser {
                 if (tr.childrenSize() >= 2) {
                     Element name = tr.child(0);
                     Element value = tr.child(1);
-                    System.out.printf("%s:\t%s\n", handleAttributeName(name), handleAttributeValue(value));
+//                    System.out.printf("%s:\t%s\n", handleAttributeName(name), handleAttributeValue(value));
+                    attributes.add(handleAttributeName(name));
+                    values.add(handleAttributeValue(value));
                 }
             }
         }
     }
 
-    public void saveFile() {
-
+    public String[] getAttributes() {
+        String[] res = new String[attributes.size()];
+        attributes.toArray(res);
+        return res;
     }
 
+    public String[] getValues() {
+        String[] res = new String[values.size()];
+        values.toArray(res);
+        return res;
+    }
 
     // remove <small> from distinguishable attributes
     private String handleAttributeName(Element name) {
