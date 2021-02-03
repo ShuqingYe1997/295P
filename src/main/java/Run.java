@@ -1,4 +1,5 @@
 import java.io.File;
+import java.util.Scanner;
 
 /**
  * @ClassName: Run
@@ -9,6 +10,10 @@ import java.io.File;
 
 public class Run {
     public static void main(String[] args) {
+        System.out.println("Input time (e.g. 2001-11): ");
+        Scanner scanner = new Scanner(System.in);
+        String time = scanner.nextLine();
+
         String path = Run.class.getClassLoader().getResource("p").getPath();
 
         for (char i = 'a'; i <= 'z'; i++) {
@@ -25,7 +30,7 @@ public class Run {
                         FileHTMLParser parser = new FileHTMLParser(companyName, filePath + "/" + filename);
                         parser.parseFile();
 
-                        FileCSVWriter writer = new FileCSVWriter(companyName,
+                        FileCSVWriter writer = new FileCSVWriter(time, companyName,
                                 parser.getAttributes(), parser.getValues());
                         writer.saveFile();
 

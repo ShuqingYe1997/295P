@@ -1,6 +1,8 @@
+import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,22 +15,25 @@ import java.util.List;
  */
 public class FileCSVWriter {
 
+    private String outputDirName;
     private String outputFilename;
 //    private List<String> attributes;
 //    private List<String> values;
     private String[] attributes;
     private String[] values;
 
-    FileCSVWriter(String outputFilename, String[] attributes, String[] values) {
+    FileCSVWriter(String time, String outputFilename, String[] attributes, String[] values) {
+        this.outputDirName = "output/" + time;
         this.outputFilename = outputFilename;
         this.attributes = attributes;
         this.values = values;
     }
 
     public void saveFile() throws Exception {
-        // e.g. output/A.csv stores all companies starting with a
-//        String filePath = "output/" + outputFilename.toUpperCase().charAt(0) + ".csv";
-        String filePath = "output/single/" + outputFilename + ".csv";
+        File dir = new File(outputDirName);
+        if (!dir.exists())
+            dir.mkdir();
+        String filePath = this.outputDirName + "/"+ outputFilename + ".csv";
         File outputFile = new File(filePath);
         CSVWriter writer = new CSVWriter(new FileWriter(outputFile, true));
 
