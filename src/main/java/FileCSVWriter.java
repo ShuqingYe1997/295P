@@ -27,7 +27,8 @@ public class FileCSVWriter {
 
     public void saveFile() throws Exception {
         // e.g. output/A.csv stores all companies starting with a
-        String filePath = "output/" + outputFilename.toUpperCase().charAt(0) + ".csv";
+//        String filePath = "output/" + outputFilename.toUpperCase().charAt(0) + ".csv";
+        String filePath = "output/single/" + outputFilename + ".csv";
         File outputFile = new File(filePath);
         CSVWriter writer = new CSVWriter(new FileWriter(outputFile, true));
 

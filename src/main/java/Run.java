@@ -9,10 +9,10 @@ import java.io.File;
 
 public class Run {
     public static void main(String[] args) {
-        String filePath = Run.class.getClassLoader().getResource("p").getPath();
+        String path = Run.class.getClassLoader().getResource("p").getPath();
 
-        for (char i = 'a'; i <= 'a'; i++) {
-            filePath += "/" + i;
+        for (char i = 'a'; i <= 'z'; i++) {
+            String filePath = path + "/" + i;
             File dir = new File(filePath);
             if (dir.exists()) {
                 String[] filenames = dir.list();
