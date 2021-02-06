@@ -19,10 +19,19 @@ public class FileHTMLParser {
     private List<String> attributes;
     private List<String> values;
 
-
+    // handle duplicated labels
     private final Set<String> DUPLICATED_ATTRIBUTE_SET = new HashSet<String>(Arrays.asList(
-            "Daily Volume", "52-Week Change", "Earnings",
-            "Most recent quarter", "Shares Short"));
+            "Daily Volume", "52-Week Change", "Earnings", "Shares Short"));
+
+    // uniform header
+    private final List<String> HEADER = new ArrayList<String>(Arrays.asList("Company","52-Week Low",
+            "Recent Price","52-Week High","Beta","Daily Volume (3-month avg)","Daily Volume (10-day avg)",
+            "52-Week Change","52-Week Change relative to S&P500","Market Capitalization","Shares Outstanding",
+            "Float","Annual Dividend","Dividend Yield","Last Split","Book Value","Earnings (ttm)","Earnings (mrq)","Sales (per share)",
+            "Cash","Price/Book","Price/Earnings","Price/Sales","Sales (ttm)","EBITDA","Income","Profit Margin",
+            "Operating Margin","Fiscal Year Ends","Most recent quarter",
+            "Return Assets","Return Equity","Current Ratio","Debt/Equity","Total Cash","Shares Short","Percent of Float",
+            "Shares Short (Prior Month)","Short Ratio","Daily Volume"));
 
     FileHTMLParser(String inputFilename, String inputFilePath) {
         this.inputFilename = inputFilename;
@@ -61,15 +70,25 @@ public class FileHTMLParser {
         }
     }
 
-    public String[] getAttributes() {
-        String[] res = new String[attributes.size()];
-        attributes.toArray(res);
-        return res;
+    public List<String> getAttributes() {
+        return HEADER;
     }
 
-    public String[] getValues() {
-        String[] res = new String[values.size()];
-        values.toArray(res);
+    public List<String> getValues() {
+        List<String> res = new ArrayList<String>();
+        for (int j = 0; j < HEADER.size(); j++)
+            res.add("none");
+
+        for (int j = 0, i = 0; i < attributes.size() && j < HEADER.size(); ) {
+            if (attributes.get(i).equals(HEADER.get(j))) {
+                res.set(j, values.get(i));
+                j++;
+                i++;
+            } else {
+                res.set(j, "none");
+                j++;
+            }
+        }
         return res;
     }
 
@@ -82,6 +101,9 @@ public class FileHTMLParser {
             if (text.equals("Sales")) { // Deal with the first "Sales" in Per-Share Data
                 DUPLICATED_ATTRIBUTE_SET.add("Sales");
                 text += " (per share)";
+            }
+            if (text.equals("")) {  // handle "Last Split"
+                text = "Last Split";
             }
         }
         else {

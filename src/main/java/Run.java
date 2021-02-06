@@ -10,15 +10,20 @@ import java.util.Scanner;
 
 public class Run {
     public static void main(String[] args) {
-        System.out.println("Input time (e.g. 2001-11): ");
+        System.out.println("Input time (e.g. 2001-10): ");
         Scanner scanner = new Scanner(System.in);
-        String time = scanner.nextLine();
+        String time  = scanner.nextLine();
+        while (!isValid(time)) {
+            System.out.println("Input time (e.g. 2001-10): ");
+            time  = scanner.nextLine();
+        }
 
-        String path = Run.class.getClassLoader().getResource("p").getPath();
+//        String path = Run.class.getClassLoader().getResource("").getPath();
+        String filePath = "D:\\下载\\2001-10\\2001\\10";
 
-        for (char i = 'a'; i <= 'z'; i++) {
-            String filePath = path + "/" + i;
-            File dir = new File(filePath);
+        for (char i = 'x'; i <= 'x'; i++) {
+            String profilePath = filePath + "\\profiles\\Yahoo\\US\\01\\p\\" + i;
+            File dir = new File(profilePath);
             if (dir.exists()) {
                 String[] filenames = dir.list();
                 if (filenames == null || filenames.length == 0)
@@ -27,11 +32,15 @@ public class Run {
                     try {
                         String companyName = filename.substring(0, filename.indexOf(".html"));
 
-                        FileHTMLParser parser = new FileHTMLParser(companyName, filePath + "/" + filename);
-                        parser.parseFile();
+                        FileHTMLParser htmlParser = new FileHTMLParser(companyName, profilePath + "/" + filename);
+                        htmlParser.parseFile();
 
-                        FileCSVWriter writer = new FileCSVWriter(time, companyName,
-                                parser.getAttributes(), parser.getValues());
+                        FileTXTParser txtParser = new FileTXTParser(time, companyName, filePath);
+                        txtParser.parseFile();
+
+                        FileCSVWriter writer = new FileCSVWriter(time,
+                                htmlParser.getAttributes(), htmlParser.getValues(),
+                                txtParser.getAttributes(), txtParser.getValues());
                         writer.saveFile();
 
                     } catch (Exception e) {
@@ -40,5 +49,13 @@ public class Run {
                 }
             }
         }
+    }
+ 
+    // tentative func
+    public static boolean isValid(String time) {
+        return
+                (time.equals("2001-10") || time.equals("2001-11") || time.equals("2001-12")
+                || time.equals("2006-10") || time.equals("2006-11") || time.equals("2006-12")
+                || time.equals("2011-10") || time.equals("2011-11") || time.equals("2011-12"));
     }
 }
