@@ -110,6 +110,5 @@ fabric.properties
 
 # My ignore
 src/main/resources
-output/
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij

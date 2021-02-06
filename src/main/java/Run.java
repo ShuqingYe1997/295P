@@ -18,10 +18,10 @@ public class Run {
             time  = scanner.nextLine();
         }
 
-//        String path = Run.class.getClassLoader().getResource("").getPath();
+//        String filePath = Run.class.getClassLoader().getResource(time).getPath();
         String filePath = "D:\\下载\\2001-10\\2001\\10";
 
-        for (char i = 'x'; i <= 'x'; i++) {
+        for (char i = 'a'; i <= 'z'; i++) {
             String profilePath = filePath + "\\profiles\\Yahoo\\US\\01\\p\\" + i;
             File dir = new File(profilePath);
             if (dir.exists()) {
