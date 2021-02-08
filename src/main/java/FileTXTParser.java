@@ -32,7 +32,7 @@ public class FileTXTParser {
         this.companyName = companyName;
         this.inputFilePath = inputFilePath;
 
-        this.attributes = new ArrayList<String>(Arrays.asList("Start Price", "End Price", "Company Return", "Market Return", "Delta"));
+        this.attributes = new ArrayList<String>(Arrays.asList("Start Price", "End Price", "Company Return", "Market Return"));
 
         this.values = new ArrayList<String>();
 
