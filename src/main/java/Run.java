@@ -19,10 +19,10 @@ public class Run {
         }
 
 //        String filePath = Run.class.getClassLoader().getResource().getPath();
-        String filePath = "D:\\下载\\2001-12\\2001\\12";
+        String filePath = "D:\\下载\\2006-10\\2006\\10";
 
-        for (char i = 'a'; i <= 'z'; i++) {
-            String profilePath = filePath + "\\profiles\\Yahoo\\US\\15\\p\\" + i;
+        for (char i = 'a'; i <= 'a'; i++) {
+            String profilePath = filePath + "\\profiles\\Yahoo\\US\\01\\p\\" + i;
             File dir = new File(profilePath);
             if (dir.exists()) {
                 String[] filenames = dir.list();
@@ -31,8 +31,7 @@ public class Run {
                 for (String filename: filenames) {
                     try {
                         String companyName = filename.substring(0, filename.indexOf(".html"));
-
-                        FileHTMLParser htmlParser = new FileHTMLParser(companyName, profilePath + "/" + filename);
+                        FileHTMLParser htmlParser = new FileHTMLParser(time, companyName, profilePath + "/" + filename);
                         htmlParser.parseFile();
 
                         FileTXTParser txtParser = new FileTXTParser(time, companyName, filePath);

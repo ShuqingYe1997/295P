@@ -14,6 +14,7 @@ import java.util.*;
  * @Date: 2021-2-3
  */
 public class FileHTMLParser {
+    private String time;
     private String inputFilename;
     private String inputFilePath;
     private List<String> attributes;
@@ -33,7 +34,8 @@ public class FileHTMLParser {
             "Return Assets","Return Equity","Current Ratio","Debt/Equity","Total Cash","Shares Short","Percent of Float",
             "Shares Short (Prior Month)","Short Ratio","Daily Volume"));
 
-    FileHTMLParser(String inputFilename, String inputFilePath) {
+    FileHTMLParser(String time, String inputFilename, String inputFilePath) {
+        this.time = time;
         this.inputFilename = inputFilename;
         this.inputFilePath = inputFilePath;
 
@@ -46,8 +48,22 @@ public class FileHTMLParser {
         this.values.add(inputFilename);
     }
 
-
     public void parseFile() throws IOException {
+        if (time.startsWith("2001"))
+            parseFile1();
+        else
+            parseFile2();
+    }
+
+
+    /*
+     * @Description: A parser for 2001
+     * @Param:
+     * @Return:
+     * @Author: SQ
+     * @Date: 2021-2-8
+     **/
+    private void parseFile1() throws IOException {
         File inputFile = new File(inputFilePath);
         Document document = Jsoup.parse(inputFile, "UTF-8", "http://biz.yahoo.com/");
 
@@ -70,11 +86,70 @@ public class FileHTMLParser {
         }
     }
 
+    /*
+     * @Description: A parser for 2006 and 2011
+     * @Param: []
+     * @Return: void
+     * @Author: SQ
+     * @Date: 2021-2-8
+     **/
+    private void parseFile2() throws IOException {
+        File inputFile = new File(inputFilePath);
+        Document document = Jsoup.parse(inputFile, "UTF-8", "");
+
+        for (int i = 6; i <= 20; i += 2) {
+            // skip "table:nth-child(8) > tbody > tr > td > table > tbody"
+            if (i == 8)
+                continue;
+            Element trs = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > " +
+                    "table:nth-child(" + i + ") > tbody > tr > td > table > tbody").first();
+            if (trs == null)
+                return;
+
+
+            for (Element tr: trs.select("tr")) {
+                if (tr.childrenSize() < 2)
+                    continue;
+                String name = tr.child(0).ownText();
+                String value = tr.child(1).ownText();
+//                System.out.printf("%s\t%s\n", name, value);
+                attributes.add(name);
+                values.add(value);
+            }
+        }
+
+        for (int i = 6; i <= 10; i += 2) {
+            Element trs = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > " +
+                    "table:nth-child(" + i + ") > tbody > tr > td > table > tbody").first();
+            // handle table "Share Statistics"
+            if (i == 8)
+                trs = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > " +
+                        "table:nth-child(" + i + ") > tbody > tr > td > table > tbody").last();
+
+            if (trs == null)
+                return;
+
+            for (Element tr: trs.select("tr")) {
+                if (tr.childrenSize() < 2)
+                    continue;
+                String name = tr.child(0).ownText();
+                String value = tr.child(1).text();
+//                System.out.printf("%s\t%s\n", name, value);
+                attributes.add(name);
+                values.add(value);
+            }
+        }
+    }
+
     public List<String> getAttributes() {
+        if (!time.startsWith("2001"))
+            return attributes;
         return HEADER;
     }
 
     public List<String> getValues() {
+        if (!time.startsWith("2001"))
+            return values;
         List<String> res = new ArrayList<String>();
         for (int j = 0; j < HEADER.size(); j++)
             res.add("none");
