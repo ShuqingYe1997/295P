@@ -36,6 +36,9 @@ public class FileCSVWriter {
     }
 
     public void saveFile() throws Exception {
+        File dir = new File("output");
+        if (!dir.exists())
+            dir.mkdir();
         String filePath = "output/"+ outputFilename + ".csv";
         File outputFile = new File(filePath);
         CSVWriter writer = new CSVWriter(new FileWriter(outputFile, true));
