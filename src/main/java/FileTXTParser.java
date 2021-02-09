@@ -133,7 +133,7 @@ public class FileTXTParser {
         catch (IOException e) {
             e.printStackTrace();
         }
-        return "";
+        return "0";
     }
 
     private double calculateReturnRatio(String s1, String s2) {

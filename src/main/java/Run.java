@@ -10,18 +10,24 @@ import java.util.Scanner;
 
 public class Run {
     public static void main(String[] args) {
-        System.out.println("Input time (e.g. 2001-10): ");
+        System.out.println("Input file path:");
         Scanner scanner = new Scanner(System.in);
+        String filePath = scanner.nextLine();
+
+        System.out.println("Input time (e.g. 2001-10): ");
         String time  = scanner.nextLine();
+
         while (!isValid(time)) {
+            System.out.println("Input file path:");
+            filePath = scanner.nextLine();
             System.out.println("Input time (e.g. 2001-10): ");
             time  = scanner.nextLine();
         }
 
 //        String filePath = Run.class.getClassLoader().getResource().getPath();
-        String filePath = "D:\\下载\\2006-10\\2006\\10";
+//        String filePath = "D:\\下载\\2006-10\\2006\\10";
 
-        for (char i = 'a'; i <= 'a'; i++) {
+        for (char i = 'a'; i <= 'z'; i++) {
             String profilePath = filePath + "\\profiles\\Yahoo\\US\\01\\p\\" + i;
             File dir = new File(profilePath);
             if (dir.exists()) {
