@@ -18,7 +18,7 @@ public class FileTXTParser {
     private String start;  // e.g. the first transaction date of Oct 2001 is 2nd
     private String end;  // e.g. the last transaction data of Oct 2001 is 31st
 
-    private static String marketReturn = "";  // market return is the same during the same period of time
+    private static double marketReturn = -1.0;  // market return is the same during the same period of time
 
     private String companyName;
     private String inputFilePath;
@@ -32,11 +32,11 @@ public class FileTXTParser {
         this.companyName = companyName;
         this.inputFilePath = inputFilePath;
 
-        this.attributes = new ArrayList<String>(Arrays.asList("Start Price", "End Price", "Company Return", "Market Return"));
+        this.attributes = new ArrayList<String>(Arrays.asList("Start Price", "End Price", "Company Return", "Market Return", "Delta Return"));
 
         this.values = new ArrayList<String>();
 
-        if(marketReturn.equals("")) {
+        if(marketReturn == -1) {
             File inputFile = new File(Run.class.getClassLoader().getResource("GSPC").getPath());
             String s1 = readFromGSPC(inputFile, time + "-" + start);
             String s2 = readFromGSPC(inputFile, time + "-" + end);
@@ -51,10 +51,13 @@ public class FileTXTParser {
         File inputFile2 = new File(inputFilePath + "/" + end + "/close");
         String price2 = readFromFile(inputFile2, companyName);
 
+        double companyReturn = calculateReturnRatio(price1, price2);
+
         values.add(price1);
         values.add(price2);
-        values.add(calculateReturnRatio(price1, price2));
-        values.add(marketReturn);
+        values.add(String.format("%.2f", companyReturn));
+        values.add(String.format("%.2f", marketReturn));
+        values.add(String.format("%.2f", companyReturn - marketReturn));
     }
 
     public List<String> getAttributes() {
@@ -133,15 +136,15 @@ public class FileTXTParser {
         return "";
     }
 
-    private String calculateReturnRatio(String s1, String s2) {
+    private double calculateReturnRatio(String s1, String s2) {
         if(s1.equals("") || s2.equals(""))
-            return "0";
+            return 0;
         double num1 = Double.parseDouble(s1);
         double num2 = Double.parseDouble(s2);
         double res = 0;
         if (num1 > 0) // i.e. num1 != 0
             res = (num2 - num1) / num1 * 100;
-        return String.format("%.2f", res) + "%";
+        return res;
     }
 
 }

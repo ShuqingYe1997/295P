@@ -24,7 +24,7 @@ public class FileHTMLParser {
     private final Set<String> DUPLICATED_ATTRIBUTE_SET = new HashSet<String>(Arrays.asList(
             "Daily Volume", "52-Week Change", "Earnings", "Shares Short"));
 
-    // uniform header
+    // uniform header1
     private final List<String> HEADER = new ArrayList<String>(Arrays.asList("Company","52-Week Low",
             "Recent Price","52-Week High","Beta","Daily Volume (3-month avg)","Daily Volume (10-day avg)",
             "52-Week Change","52-Week Change relative to S&P500","Market Capitalization","Shares Outstanding",
@@ -94,62 +94,157 @@ public class FileHTMLParser {
      * @Date: 2021-2-8
      **/
     private void parseFile2() throws IOException {
+        Element element = null;
         File inputFile = new File(inputFilePath);
         Document document = Jsoup.parse(inputFile, "UTF-8", "");
-
-        for (int i = 6; i <= 20; i += 2) {
-            // skip "table:nth-child(8) > tbody > tr > td > table > tbody"
-            if (i == 8)
-                continue;
-            Element trs = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > " +
-                    "table:nth-child(" + i + ") > tbody > tr > td > table > tbody").first();
-            if (trs == null)
-                return;
-
-
-            for (Element tr: trs.select("tr")) {
-                if (tr.childrenSize() < 2)
-                    continue;
-                String name = tr.child(0).ownText();
-                String value = tr.child(1).ownText();
-//                System.out.printf("%s\t%s\n", name, value);
-                attributes.add(name);
-                values.add(value);
+        for (int i = 1; i < HEADER.size(); i++) {
+            if (HEADER.get(i).equals("52-Week Low"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(6) > tbody > tr > td > table > tbody > tr:nth-child(6) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Recent Price"))
+                element = document.selectFirst("#yfncsubtit > tbody > tr > td:nth-child(2) > big > b");
+            else if (HEADER.get(i).equals("52-Week High"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(6) > tbody > tr > td > table > tbody > tr:nth-child(5) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Beta"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(6) > tbody > tr > td > table > tbody > tr:nth-child(2) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Daily Volume (3-month avg)"))
+                element = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(8) > tbody > tr > td > table > tbody > tr:nth-child(2) > td.yfnc_tabledata1").last();
+            else if (HEADER.get(i).equals("Daily Volume (10-day avg)"))
+                element = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(8) > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1").last();
+            else if (HEADER.get(i).equals("52-Week Change"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(6) > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("52-Week Change relative to S&P500"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(6) > tbody > tr > td > table > tbody > tr:nth-child(4) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Market Capitalization"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(6) > tbody > tr > td > table > tbody > tr:nth-child(1) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Shares Outstanding"))
+                element = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(8) > tbody > tr > td > table > tbody > tr:nth-child(4) > td.yfnc_tabledata1").last();
+            else if (HEADER.get(i).equals("Float"))
+                element = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(8) > tbody > tr > td > table > tbody > tr:nth-child(5) > td.yfnc_tabledata1").last();
+            else if (HEADER.get(i).equals("Annual Dividend"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(10) > tbody > tr > td > table > tbody > tr:nth-child(2) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Dividend Yield"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(10) > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Last Split"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(10) > tbody > tr > td > table > tbody > tr:nth-child(11) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Book Value"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(18) > tbody > tr > td > table > tbody > tr:nth-child(7) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Earnings (ttm)"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(16) > tbody > tr > td > table > tbody > tr:nth-child(8) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Sales (per share)"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(16) > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Cash"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(18) > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Price/Book"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(6) > tbody > tr > td > table > tbody > tr:nth-child(7) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Price/Earnings"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(6) > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Price/Sales"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(6) > tbody > tr > td > table > tbody > tr:nth-child(6) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Sales (ttm)"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(16) > tbody > tr > td > table > tbody > tr:nth-child(2) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("EBITDA"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(16) > tbody > tr > td > table > tbody > tr:nth-child(6) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Income"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(16) > tbody > tr > td > table > tbody > tr:nth-child(7) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Profit Margin")) {
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(12) > tbody > tr > td > table > tbody > tr:nth-child(2) > td.yfnc_tabledata1");
+                if (element != null && !element.text().contains("%") && !element.text().contains("N/A"))
+                    element = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(12) > tbody > tr > td > table > tbody > tr:nth-child(2) > td.yfnc_tabledata1")
+                            .get(1);
             }
-        }
-
-        for (int i = 6; i <= 10; i += 2) {
-            Element trs = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > " +
-                    "table:nth-child(" + i + ") > tbody > tr > td > table > tbody").first();
-            // handle table "Share Statistics"
-            if (i == 8)
-                trs = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > " +
-                        "table:nth-child(" + i + ") > tbody > tr > td > table > tbody").last();
-
-            if (trs == null)
-                return;
-
-            for (Element tr: trs.select("tr")) {
-                if (tr.childrenSize() < 2)
-                    continue;
-                String name = tr.child(0).ownText();
-                String value = tr.child(1).text();
-//                System.out.printf("%s\t%s\n", name, value);
-                attributes.add(name);
-                values.add(value);
+            else if (HEADER.get(i).equals("Operating Margin")) {
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(12) > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1");
+                if (element != null && !element.text().contains("%") && !element.text().contains("N/A"))
+                    element = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(12) > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1")
+                            .get(1);
             }
+            else if (HEADER.get(i).equals("Fiscal Year Ends"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(10) > tbody > tr > td > table > tbody > tr:nth-child(2) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Most recent quarter"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(10) > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Return Assets"))
+                element = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(14) > tbody > tr > td > table > tbody > tr:nth-child(2) > td.yfnc_tabledata1").last();
+            else if (HEADER.get(i).equals("Return Equity"))
+                element = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(14) > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1").last();
+            else if (HEADER.get(i).equals("Current Ratio"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(18) > tbody > tr > td > table > tbody > tr:nth-child(6) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Debt/Equity"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(18) > tbody > tr > td > table > tbody > tr:nth-child(5) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Total Cash"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > table:nth-child(18) > tbody > tr > td > table > tbody > tr:nth-child(2) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Shares Short"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(8) > tbody > tr > td > table > tbody > tr:nth-child(8) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Percent of Float"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(8) > tbody > tr > td > table > tbody > tr:nth-child(10) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Shares Short (Prior Month)"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(8) > tbody > tr > td > table > tbody > tr:nth-child(11) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Short Ratio"))
+                element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(8) > tbody > tr > td > table > tbody > tr:nth-child(9) > td.yfnc_tabledata1");
+            else if (HEADER.get(i).equals("Daily Volume")) {
+                element = document.selectFirst("#yfncsumtab > tbody > tr > td > table:nth-child(3) > tbody > tr:nth-child(2) > td:nth-child(3) > table > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1");
+                if (element == null)
+                    element = document.selectFirst("#yfncsumtab > tbody > tr > td > table:nth-child(3) > tbody > tr > td:nth-child(3) > table > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1");
+            }
+            String value = "none";
+            if (element != null)
+                value = element.text();
+            System.out.println(HEADER.get(i) + "\t" + value);
+            values.add(i, value);
         }
     }
+//    private void parseFile2() throws IOException {
+//        File inputFile = new File(inputFilePath);
+//        Document document = Jsoup.parse(inputFile, "UTF-8", "");
+//
+//        for (int i = 6; i <= 20; i += 2) {
+//            // skip "table:nth-child(8) > tbody > tr > td > table > tbody"
+//            if (i == 8)
+//                continue;
+//            Element trs = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(1) > " +
+//                    "table:nth-child(" + i + ") > tbody > tr > td > table > tbody").first();
+//            if (trs == null)
+//                return;
+//
+//            for (Element tr: trs.select("tr")) {
+//                if (tr.childrenSize() < 2)
+//                    continue;
+//                String name = tr.child(0).ownText();
+//                String value = tr.child(1).ownText();
+//                attributes.add(name);
+//                values.add(value);
+//            }
+//        }
+//
+//        for (int i = 6; i <= 10; i += 2) {
+//            Element trs = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > " +
+//                    "table:nth-child(" + i + ") > tbody > tr > td > table > tbody").first();
+//            // handle table "Share Statistics"
+//            if (i == 8)
+//                trs = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > " +
+//                        "table:nth-child(" + i + ") > tbody > tr > td > table > tbody").last();  // if childsize == 1, first == last
+//
+//            if (trs == null)
+//                return;
+//
+//            for (Element tr: trs.select("tr")) {
+//                if (tr.childrenSize() < 2)
+//                    continue;
+//                String name = tr.child(0).ownText();
+//                String value = tr.child(1).text();
+//                attributes.add(name);
+//                values.add(value);
+//            }
+//        }
+//    }
 
     public List<String> getAttributes() {
-        if (!time.startsWith("2001"))
-            return attributes;
         return HEADER;
     }
 
     public List<String> getValues() {
         if (!time.startsWith("2001"))
             return values;
+
         List<String> res = new ArrayList<String>();
         for (int j = 0; j < HEADER.size(); j++)
             res.add("none");
