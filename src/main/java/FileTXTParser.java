@@ -2,7 +2,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.Format;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +31,8 @@ public class FileTXTParser {
         this.companyName = companyName;
         this.inputFilePath = inputFilePath;
 
-        this.attributes = new ArrayList<String>(Arrays.asList("Start Price", "End Price", "Company Return", "Market Return", "Delta Return"));
+        this.attributes = new ArrayList<String>(Arrays.asList("Start Price", "End Price", "Company Return",
+                                                "Market Return", "Avg Trade Volume", "Delta Return"));
 
         this.values = new ArrayList<String>();
 
@@ -46,17 +46,21 @@ public class FileTXTParser {
 
     public void parseFile() throws Exception {
         File inputFile1 = new File(inputFilePath + "/" + start + "/close");
-        String price1 = readFromFile(inputFile1, companyName);
+        String price1 = readFromFile(inputFile1, companyName, "ClosePrice");
+        String volume1 = readFromFile(inputFile1, companyName, "Volume");
 
         File inputFile2 = new File(inputFilePath + "/" + end + "/close");
-        String price2 = readFromFile(inputFile2, companyName);
+        String price2 = readFromFile(inputFile2, companyName, "ClosePrice");
+        String volume2 = readFromFile(inputFile2, companyName, "Volume");
 
         double companyReturn = calculateReturnRatio(price1, price2);
+        double avgTradeVolume = calculateTradeVolume(price1, volume1, price2, volume2);
 
         values.add(price1);
         values.add(price2);
         values.add(String.format("%.2f", companyReturn));
         values.add(String.format("%.2f", marketReturn));
+        values.add(String.format("%.2f", avgTradeVolume));
         values.add(String.format("%.2f", companyReturn - marketReturn));
     }
 
@@ -109,13 +113,17 @@ public class FileTXTParser {
         }
     }
 
-    private String readFromFile(File file, String companyName) throws IOException {
+    private String readFromFile(File file, String companyName, String label) throws IOException {
         BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
         String line = null;
         while ((line = bufferedReader.readLine())!= null) {
             String[] fields = line.trim().split("\\s+");
-            if (fields[0].toLowerCase().equals(companyName.toLowerCase()))
-                return fields[2];  // close price
+            if (fields[0].toLowerCase().equals(companyName.toLowerCase())) {
+                if (label.equals("ClosePrice"))
+                    return fields[2];  // close price
+                else if (label.equals("Volume"))
+                    return fields[5];  // daily volume (share)
+            }
         }
         return "";
     }
@@ -145,6 +153,17 @@ public class FileTXTParser {
         if (num1 > 0) // i.e. num1 != 0
             res = (num2 - num1) / num1 * 100;
         return res;
+    }
+
+    private double calculateTradeVolume(String price1, String volume1, String price2, String volume2) {
+        if(price1.equals("") || price2.equals(""))
+            return 0;
+        double p1 = Double.parseDouble(price1);
+        double v1 = Double.parseDouble(volume1);
+        double p2 = Double.parseDouble(price2);
+        double v2 = Double.parseDouble(volume2);
+        return (p1 * v1 + p2 * v2) / 2;
+
     }
 
 }

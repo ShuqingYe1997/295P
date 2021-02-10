@@ -51,7 +51,7 @@ public class FileHTMLParser {
     public void parseFile() throws IOException {
         if (time.startsWith("2001"))
             parseFile1();
-        else
+        else if (time.startsWith("2006"))
             parseFile2();
     }
 
@@ -188,7 +188,7 @@ public class FileHTMLParser {
             String value = "none";
             if (element != null)
                 value = element.text();
-            System.out.println(HEADER.get(i) + "\t" + value);
+//            System.out.println(HEADER.get(i) + "\t" + value);
             values.add(i, value);
         }
     }

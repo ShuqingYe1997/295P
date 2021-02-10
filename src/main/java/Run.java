@@ -17,15 +17,12 @@ public class Run {
         System.out.println("Input time (e.g. 2001-10): ");
         String time  = scanner.nextLine();
 
-        while (!isValid(time)) {
-            System.out.println("Input file path:");
-            filePath = scanner.nextLine();
-            System.out.println("Input time (e.g. 2001-10): ");
-            time  = scanner.nextLine();
-        }
-
-//        String filePath = Run.class.getClassLoader().getResource().getPath();
-//        String filePath = "D:\\下载\\2006-10\\2006\\10";
+//        while (!isValid(time)) {
+//            System.out.println("Input file path:");
+//            filePath = scanner.nextLine();
+//            System.out.println("Input time (e.g. 2001-10): ");
+//            time  = scanner.nextLine();
+//        }
 
         for (char i = 'a'; i <= 'z'; i++) {
             String profilePath = filePath + "\\profiles\\Yahoo\\US\\01\\p\\" + i;
@@ -47,12 +44,24 @@ public class Run {
                                 htmlParser.getAttributes(), htmlParser.getValues(),
                                 txtParser.getAttributes(), txtParser.getValues());
                         writer.saveFile();
-
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             }
+        } // end of traversal file dir
+
+        for (int i = 10; i <= 12; i++) {
+            File file = new File("output/" + time.substring(0, 5) + i + ".csv");   // e.g. 2001- + month
+            if (!file.exists()) {
+                return;  // can't combine because some months are missing
+            }
+        }
+        try {
+            FileCSVCombiner combiner = new FileCSVCombiner(time.substring(0, 4), "output/");
+            combiner.saveFile();
+        }catch (Exception e) {
+            e.printStackTrace();
         }
     }
  
