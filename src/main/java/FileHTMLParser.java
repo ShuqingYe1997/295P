@@ -364,7 +364,7 @@ public class FileHTMLParser {
                 element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td.yfnc_modtitlew2 > table:nth-child(5) > tbody > tr > td > table > tbody > tr:nth-child(9) > td.yfnc_tabledata1");
 
             else if (HEADER.get(i).equals("Daily Volume"))
-                element = document.selectFirst("#yfs_v00_a");
+                element = document.selectFirst("#table2 > tbody > tr:nth-child(3) > td");
 
             String value = "none";
             if (element != null)

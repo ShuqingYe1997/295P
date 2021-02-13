@@ -17,12 +17,12 @@ public class Run {
         System.out.println("Input time (e.g. 2001-10): ");
         String time  = scanner.nextLine();
 
-//        while (!isValid(time)) {
-//            System.out.println("Input file path:");
-//            filePath = scanner.nextLine();
-//            System.out.println("Input time (e.g. 2001-10): ");
-//            time  = scanner.nextLine();
-//        }
+        while (!isValid(time)) {
+            System.out.println("Input file path:");
+            filePath = scanner.nextLine();
+            System.out.println("Input time (e.g. 2001-10): ");
+            time  = scanner.nextLine();
+        }
 
         for (char i = 'a'; i <= 'z'; i++) {
             String profilePath = filePath + "\\profiles\\Yahoo\\US\\01\\p\\" + i;
