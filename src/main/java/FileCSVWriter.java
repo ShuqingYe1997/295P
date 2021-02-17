@@ -60,6 +60,7 @@ public class FileCSVWriter {
         writer.writeAll(data);
 
         writer.close();
-        System.out.println("============" + this.outputFilename + " saved" + "============");
+        if (cnt % 100 == 0)
+            System.out.println("============" + cnt + " companies saved." + "============");
     }
 }
