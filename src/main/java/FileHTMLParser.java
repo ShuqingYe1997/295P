@@ -441,6 +441,6 @@ public class FileHTMLParser {
             return "none";
         double stockRatio = Double.parseDouble(stock.replace("%",""));
         double spRatio = Double.parseDouble(sp.replace("%", ""));
-        return String.format(".2%f", stockRatio - spRatio) + "%";
+        return String.format("%.2f", stockRatio - spRatio) + "%";
     }
 }
