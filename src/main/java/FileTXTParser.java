@@ -71,7 +71,8 @@ public class FileTXTParser {
         return values;
     }
 
-    private void getDate() {
+    // TODO: first and last trading date of a given month should not be hardcoded
+    public void getDate() {
         if (time.equals("2001-10")) {
             start = "02";
             end = "31";
