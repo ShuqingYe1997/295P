@@ -114,6 +114,7 @@ public class FileHTMLParser {
                 element = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(8) > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1").last();
             else if (HEADER.get(i).equals("52-Week Change"))
                 element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(6) > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1");
+            //TODO
             else if (HEADER.get(i).equals("52-Week Change relative to S&P500"))
                 element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(6) > tbody > tr > td > table > tbody > tr:nth-child(4) > td.yfnc_tabledata1");
             else if (HEADER.get(i).equals("Market Capitalization"))
@@ -271,6 +272,7 @@ public class FileHTMLParser {
                 element = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td.yfnc_modtitlew2 > table:nth-child(4) > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1")
                         .last();
 
+            // TODO
             else if (HEADER.get(i).equals("52-Week Change relative to S&P500"))
                 element = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td.yfnc_modtitlew2 > table:nth-child(4) > tbody > tr > td > table > tbody > tr:nth-child(4) > td.yfnc_tabledata1")
                         .last();
@@ -378,14 +380,19 @@ public class FileHTMLParser {
     }
 
     public List<String> getValues() {
-        if (!time.startsWith("2001"))
+        if (!time.startsWith("2001")) {
+            int changeRelativeIndex = 8;
+            values.set(changeRelativeIndex,
+                    calculateRelativeChange(values.get(changeRelativeIndex - 1), values.get(changeRelativeIndex)));
             return values;
+        }
 
+        // For 2001 data
         List<String> res = new ArrayList<String>();
         for (int j = 0; j < HEADER.size(); j++)
             res.add("none");
 
-        for (int j = 0, i = 0; i < attributes.size() && j < HEADER.size(); ) {
+        for (int i = 0, j = 0; i < attributes.size() && j < HEADER.size(); ) {
             if (attributes.get(i).equals(HEADER.get(j))) {
                 res.set(j, values.get(i));
                 j++;
@@ -427,5 +434,13 @@ public class FileHTMLParser {
         if (res.equals(""))
             res = "none";
         return res;
+    }
+
+    private String calculateRelativeChange(String stock, String sp) {
+        if (stock.equals("none") || stock.equals("N/A") || sp.equals("none") || sp.equals("N/A"))
+            return "none";
+        double stockRatio = Double.parseDouble(stock.replace("%",""));
+        double spRatio = Double.parseDouble(sp.replace("%", ""));
+        return String.format(".2%f", stockRatio - spRatio) + "%";
     }
 }

@@ -32,7 +32,7 @@ public class FileTXTParser {
         this.inputFilePath = inputFilePath;
 
         this.attributes = new ArrayList<String>(Arrays.asList("Start Price", "End Price", "Company Return",
-                                                "Market Return", "Avg Trade Volume", "Delta Return"));
+                                                "Market Return", "Avg DCV", "Delta Return"));
 
         this.values = new ArrayList<String>();
 
@@ -51,16 +51,15 @@ public class FileTXTParser {
 
         File inputFile2 = new File(inputFilePath + "/" + end + "/close");
         String price2 = readFromFile(inputFile2, companyName, "ClosePrice");
-        String volume2 = readFromFile(inputFile2, companyName, "Volume");
 
         double companyReturn = calculateReturnRatio(price1, price2);
-        double avgTradeVolume = calculateTradeVolume(price1, volume1, price2, volume2);
+        double avgDCV = calculateDCV(price1, volume1);
 
         values.add(price1);
         values.add(price2);
         values.add(String.format("%.2f", companyReturn));
         values.add(String.format("%.2f", marketReturn));
-        values.add(String.format("%.2f", avgTradeVolume));
+        values.add(String.format("%.2f", avgDCV));
         values.add(String.format("%.2f", companyReturn - marketReturn));
     }
 
@@ -155,14 +154,13 @@ public class FileTXTParser {
         return res;
     }
 
-    private double calculateTradeVolume(String price1, String volume1, String price2, String volume2) {
-        if(price1.equals("") || price2.equals(""))
+    private double calculateDCV(String price1, String volume1) {
+        if(price1.equals("") || volume1.equals("") || price1.equals("N/A") || volume1.equals("N/A"))
             return 0;
         double p1 = Double.parseDouble(price1);
         double v1 = Double.parseDouble(volume1);
-        double p2 = Double.parseDouble(price2);
-        double v2 = Double.parseDouble(volume2);
-        return (p1 * v1 + p2 * v2) / 2;
+
+        return p1 * v1;
 
     }
 

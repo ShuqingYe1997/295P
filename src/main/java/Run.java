@@ -34,6 +34,9 @@ public class Run {
                 for (String filename: filenames) {
                     try {
                         String companyName = filename.substring(0, filename.indexOf(".html"));
+                        // filter out those companies whose name containing dots
+                        if (companyName.contains("."))
+                            continue;
                         FileHTMLParser htmlParser = new FileHTMLParser(time, companyName, profilePath + "/" + filename);
                         htmlParser.parseFile();
 
