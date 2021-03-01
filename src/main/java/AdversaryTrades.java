@@ -127,6 +127,7 @@ class Trades {
                 writer.write(end + " 15:59 sell " + shares.get(i) + " shares of " + portfolio.get(i).getSymbol() + "\n");
             }
             writer.close();
+            System.out.println("=================== portfolio saved ===================");
 
         }catch(Exception e) {
             e.printStackTrace();
