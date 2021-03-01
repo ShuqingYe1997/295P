@@ -109,6 +109,6 @@ fabric.properties
 .idea/codestream.xml
 
 # My ignore
-
+input/2011/
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij

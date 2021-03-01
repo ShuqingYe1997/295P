@@ -14,8 +14,8 @@ import java.util.List;
  */
 public class FileTXTParser {
     private String time;   // e.g. 2001-11
-    private String start;  // e.g. the first transaction date of Oct 2001 is 2nd
-    private String end;  // e.g. the last transaction data of Oct 2001 is 31st
+    private String start;  // e.g. the first trading date of Oct 2001 is 2nd
+    private String end;  // e.g. the last trading data of Oct 2001 is 31st
 
     private static double marketReturn = -1.0;  // market return is the same during the same period of time
 
@@ -37,7 +37,7 @@ public class FileTXTParser {
         this.values = new ArrayList<String>();
 
         if(marketReturn == -1) {
-            File inputFile = new File(Run.class.getClassLoader().getResource("GSPC").getPath());
+            File inputFile = new File(ParserRunner.class.getClassLoader().getResource("GSPC").getPath());
             String s1 = readFromGSPC(inputFile, time + "-" + start);
             String s2 = readFromGSPC(inputFile, time + "-" + end);
             marketReturn = calculateReturnRatio(s1, s2);
@@ -53,13 +53,13 @@ public class FileTXTParser {
         String price2 = readFromFile(inputFile2, companyName, "ClosePrice");
 
         double companyReturn = calculateReturnRatio(price1, price2);
-        double avgDCV = calculateDCV(price1, volume1);
+        double DCV = calculateDCV(price1, volume1);
 
         values.add(price1);
         values.add(price2);
         values.add(String.format("%.2f", companyReturn));
         values.add(String.format("%.2f", marketReturn));
-        values.add(String.format("%.2f", avgDCV));
+        values.add(String.format("%.2f", DCV));
         values.add(String.format("%.2f", companyReturn - marketReturn));
     }
 
@@ -109,7 +109,7 @@ public class FileTXTParser {
             end = "30";
         }
         else {
-            System.out.println("You shouldn't be here!");
+            System.err.println("You shouldn't be here!");
         }
     }
 
@@ -135,7 +135,8 @@ public class FileTXTParser {
             while ((line = bufferedReader.readLine()) != null) {
                 String[] fields = line.trim().split("\\s+");
                 if (fields[0].equals(date))
-                    return fields[fields.length - 1];  // close price
+                    return fields[4];  // close
+//                    return fields[fields.length - 1];  // close price
             }
         }
         catch (IOException e) {

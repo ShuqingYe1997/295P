@@ -114,7 +114,6 @@ public class FileHTMLParser {
                 element = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(8) > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1").last();
             else if (HEADER.get(i).equals("52-Week Change"))
                 element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(6) > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1");
-            //TODO
             else if (HEADER.get(i).equals("52-Week Change relative to S&P500"))
                 element = document.selectFirst("#yfncsumtab > tbody > tr:nth-child(2) > td:nth-child(3) > table:nth-child(6) > tbody > tr > td > table > tbody > tr:nth-child(4) > td.yfnc_tabledata1");
             else if (HEADER.get(i).equals("Market Capitalization"))
@@ -272,7 +271,6 @@ public class FileHTMLParser {
                 element = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td.yfnc_modtitlew2 > table:nth-child(4) > tbody > tr > td > table > tbody > tr:nth-child(3) > td.yfnc_tabledata1")
                         .last();
 
-            // TODO
             else if (HEADER.get(i).equals("52-Week Change relative to S&P500"))
                 element = document.select("#yfncsumtab > tbody > tr:nth-child(2) > td.yfnc_modtitlew2 > table:nth-child(4) > tbody > tr > td > table > tbody > tr:nth-child(4) > td.yfnc_tabledata1")
                         .last();
