@@ -26,11 +26,7 @@ public class Stock {
         this.symbol = symbol;
     }
 
-    public void setStartingPrice(double price) {
+    public void setPrice(double price) {
         this.price = price;
-    }
-
-    public void setEndPrice(double endPrice) {
-        this.price = endPrice;
     }
 }

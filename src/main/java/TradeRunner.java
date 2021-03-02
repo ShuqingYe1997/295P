@@ -131,7 +131,7 @@ class Trades {
         int i = 0;
         while ((nextLine = reader.readNext()) != null && i < portfolio.size()) {
             if (nextLine[0].equals(portfolio.get(i).symbol)) {
-                portfolio.get(i).setStartingPrice(Double.parseDouble(nextLine[40]));  // start price
+                portfolio.get(i).setPrice(Double.parseDouble(nextLine[40]));  // start price
                 i++;
             }
         }
