@@ -18,7 +18,8 @@ class Transaction {
     int shares;
     Stock stock;
 
-    public Transaction() {}
+    public Transaction() {
+    }
 
     public Transaction(String day, String time, String action, int shares, Stock stock) {
         this.day = day;
@@ -41,10 +42,10 @@ class Transaction {
     public String toString() {
         if (action.equals("buy"))  // 31 15:59 1461 AMSC sold at $4.37
             return day + " " + time + " " + shares + " " + stock.symbol + " "
-                + "bought" + " at $" + stock.price;
+                + "bought" + " at $" + String.format("%.2f", stock.price);
         else if (action.equals("sell"))
             return day + " " + time + " " + shares + " " + stock.symbol + " "
-                    + "sold" + " at $" + stock.price;
+                    + "sold" + " at $" + String.format("%.2f", stock.price);
         else  // 1326 shares of AUO [$3.78] valued at $5012.28
             return shares + " shares of " + stock.symbol + " "
                     + "[$" + stock.price + "] valued at $" + String.format("%.2f", shares * stock.price);
@@ -52,10 +53,15 @@ class Transaction {
 }
 
 class PortFolio {
+    private String year;
+    private String month;
+
     private List<Transaction> tradeList;  // 持仓
     private double totalValue;
 
-    public PortFolio() {
+    public PortFolio(String year, String month) {
+        this.year = year;
+        this.month = month;
         tradeList = new ArrayList<Transaction>();
         totalValue = 0;
     }
@@ -104,9 +110,17 @@ class PortFolio {
     // 2958 shares of GSS [$1.71] valued at $5043.39
     public void display() {
         for (Transaction t: tradeList) {
-            t.action = "display";
-            totalValue += t.shares * t.stock.price;  // todo: price should be...?
-            System.out.println(t.toString());
+            Transaction dis = new Transaction(t);  // make a copy
+            dis.day = tradeList.get(tradeList.size() - 1).day;  // get the  date of the latest transaction
+            dis.time = "15:59";
+            dis.action = "display";
+            try {
+                Utils.readStream(dis, year, month);
+            }catch (Exception e) {
+                e.printStackTrace();
+            }
+            totalValue += dis.shares * dis.stock.price;
+            System.out.println(dis.toString());
         }
         System.out.println("Total stocks' value: $" + String.format("%.2f", totalValue));
     }
@@ -116,98 +130,9 @@ class PortFolio {
     }
 }
 
-public class Adversary {
-    private String date;
-    private String inputFilename;
-    private double cashBalance;
-
-    private List<Transaction> inputTradeList;  // 委托
-    private PortFolio portfolio;
-
-    public final int TRASACTION_FEE = 10;
-
-    public Adversary(String date, String inputFilename, double cash) {
-        this.date = date;
-        this.inputFilename = inputFilename;
-        this.cashBalance = cash;
-
-        this.inputTradeList = new ArrayList<Transaction>();
-        this.portfolio = new PortFolio();
-    }
-
-    public void execute() {
-        try {
-            readTrades();
-            for (Transaction t: inputTradeList) {
-                readStream(t);  // t's time might be changed, price will be set
-                if (t.action.equals("buy")) {
-                    buy(t);
-                }
-                else if (t.action.equals("sell"))
-                    sell(t);
-                else
-                    System.out.println("Syntax error in " + inputFilename + "!!!");
-            }
-            displayAccountStatus();
-
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // TODO: what to do when short of money
-    // TODO: 1% DCV
-    private void buy(Transaction t) {
-        if (!portfolio.update(t, cashBalance))
-            return;
-
-        double cashSpent = t.shares * t.stock.price;
-        cashBalance -= cashSpent + TRASACTION_FEE;
-
-        // 03 15:59 1461 AMSC bought at $3.45; cash spent $5040.45; cash balance $94949.55
-        System.out.print(t.toString() + "; ");
-        System.out.print("cash spent $" + String.format("%.2f", cashSpent) + "; ");
-        System.out.println("cash balance $" + String.format("%.2f", cashBalance));
-    }
-
-    private void sell(Transaction t) {
-       if (!portfolio.update(t))
-           return;
-
-        double cashAcquired = t.shares * t.stock.price;
-        cashBalance += cashAcquired - TRASACTION_FEE;
-
-        // 31 15:59 1461 AMSC sold at $4.37; cash acquired $6384.57; cash balance $10258.96
-        System.out.print(t.toString() + "; ");
-        System.out.print("cash acquired $" + String.format("%.2f", cashAcquired) + "; ");
-        System.out.println("cash balance $" + String.format("%.2f", cashBalance));
-    }
-
-    public void displayAccountStatus() {
-        System.out.println("Account status: \nCash balance is $" + String.format("%.2f", cashBalance));
-        portfolio.display();
-        System.out.println("TOTAL: $" + String.format("%.2f", cashBalance + portfolio.getTotalValue()));
-    }
-
-    private void readTrades() throws Exception{
-        FileReader reader = new FileReader(new File("output/" + inputFilename));
-        BufferedReader bufferedReader = new BufferedReader(reader);
-        String line;
-
-        while ((line = bufferedReader.readLine()) != null) {
-            // 03 15:59 buy 2500 shares of RDN
-            String[] tokens = line.split("\\s+");
-            inputTradeList.add(new Transaction(tokens[0], tokens[1], tokens[2],
-                    Integer.parseInt(tokens[3]), new Stock(tokens[tokens.length - 1])));
-        }
-
-        bufferedReader.close();
-        reader.close();
-    }
-
-
-    private void readStream(Transaction t) throws Exception{
-        String filePath = "D:/下载/streaming-tsv/" + date.substring(0,4) + "/" + date.substring(5) + "/" + t.day + "/streaming.tsv";
+class Utils {
+    public static void readStream(Transaction t, String year, String month) throws Exception{
+        String filePath = "D:/下载/streaming-tsv/" + year + "/" + month + "/" + t.day + "/streaming.tsv";
         FileReader reader = new FileReader(new File(filePath));
         BufferedReader bufferedReader = new BufferedReader(reader);
         String line;
@@ -235,19 +160,14 @@ public class Adversary {
         setTradingPrice(transactions.get(transactions.size() - 1), t);
     }
 
-    private void setTradingPrice(String[] tokens, Transaction t) {
+    private static void setTradingPrice(String[] tokens, Transaction t) {
         double price;
         if (t.action.equals("buy")) {
-            if (tokens[tokens.length - 1].equals("N/A"))
-                price = Double.parseDouble(tokens[2]); // TODO: what to do with N/A?
-            else
-                price = Double.parseDouble(tokens[tokens.length - 1]);  // asking price
+            price = getBuyingPrice(tokens, t);
         }
+
         else if (t.action.equals("sell")){
-            if (tokens[tokens.length - 2].equals("N/A"))
-                price = Double.parseDouble(tokens[2]); // TODO: what to do with N/A?
-            else
-                price = Double.parseDouble(tokens[tokens.length - 2]);  // bidding price
+            price = getSellingPrice(tokens, t);
         }
         else {  // display
             price = Double.parseDouble(tokens[2]);
@@ -256,8 +176,173 @@ public class Adversary {
         t.stock.setPrice(price);
     }
 
+    // print out one line saying the average price of the whole set of trades
+    private static double getBuyingPrice(String[] tokens, Transaction t) {
+        double price = 0;
+        int volume = Integer.parseInt(tokens[5]);
+        double currentPrice = Double.parseDouble(tokens[2]);
+
+
+        // bid-ask spread
+        double spread = 0;
+        if (tokens[tokens.length - 1].equals("N/A")) {
+            spread = Math.exp(-0.2 * Math.log(volume)) / 2;
+            price = currentPrice + spread;
+        }
+        else {
+            double bidding = Double.parseDouble(tokens[tokens.length - 2]);
+            double asking = Double.parseDouble(tokens[tokens.length - 1]);
+            price = asking;
+            spread = (asking - bidding) / 2;
+        }
+
+        // exceeding 1% DCV
+        if (t.shares > volume * 0.01) {
+            int shares = t.shares;
+            double sum = 0;
+            int cnt = 1;
+            while (shares > 0) {
+                sum += volume * 0.01 * (currentPrice + cnt * spread);
+                cnt++;
+                shares -= volume * 0.01;
+            }
+            // the average price of the whole set of trades
+            price = sum / t.shares;
+        }
+
+        return price;
+    }
+
+    private static double getSellingPrice(String[] tokens, Transaction t) {
+        double price = 0;
+        int volume = Integer.parseInt(tokens[5]);
+        double currentPrice = Double.parseDouble(tokens[2]);
+
+        // bid-ask spread
+        double spread = 0;
+        if (tokens[tokens.length - 1].equals("N/A")) {
+            spread = Math.exp(-0.2 * Math.log(volume)) / 2;
+            price = currentPrice - spread;
+        }
+        else {
+            double bidding = Double.parseDouble(tokens[tokens.length - 2]);
+            double asking = Double.parseDouble(tokens[tokens.length - 1]);
+            price = asking;
+            spread = (asking - bidding) / 2;
+        }
+
+        // exceeding 1% DCV
+        if (t.shares > volume * 0.01) {
+            int shares = t.shares;
+            double sum = 0;
+            int cnt = 1;
+            while (shares > 0) {
+                sum += volume * 0.01 * (currentPrice - cnt * spread);
+                cnt++;
+                shares -= volume * 0.01;
+            }
+            // the average price of the whole set of trades
+            price = sum / t.shares;
+        }
+
+        return price;
+    }
+
+}
+
+public class Adversary {
+    private String year;
+    private String month;
+    private String inputFilename;
+    private double cashBalance;
+
+    private List<Transaction> inputTradeList;  // 委托
+    private PortFolio portfolio;
+
+    public final int TRASACTION_FEE = 10;
+
+    public Adversary(String year, String month, String inputFilename, double cash) {
+        this.year = year;
+        this.month = month;
+        this.inputFilename = inputFilename;
+        this.cashBalance = cash;
+
+        this.inputTradeList = new ArrayList<Transaction>();
+        this.portfolio = new PortFolio(year, month);
+    }
+
+    public void execute() {
+        try {
+            readTrades();
+            for (Transaction t: inputTradeList) {
+                Utils.readStream(t, year, month);  // t's time might be changed, price will be set
+                if (t.action.equals("buy")) {
+                    buy(t);
+                }
+                else if (t.action.equals("sell"))
+                    sell(t);
+                else
+                    System.out.println("Syntax error in " + inputFilename + "!!!");
+            }
+            displayAccountStatus();
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void buy(Transaction t) {
+        if (!portfolio.update(t, cashBalance))
+            return;
+
+        double cashSpent = t.shares * t.stock.price;
+        cashBalance -= cashSpent + TRASACTION_FEE;
+
+        // 03 15:59 1461 AMSC bought at $3.45; cash spent $5040.45; cash balance $94949.55
+        System.out.print(t.toString() + "; ");
+        System.out.print("cash spent $" + String.format("%.2f", cashSpent) + "; ");
+        System.out.println("cash balance $" + String.format("%.2f", cashBalance));
+    }
+
+    private void sell(Transaction t) {
+       if (!portfolio.update(t))
+           return;
+
+        double cashAcquired = t.shares * t.stock.price;
+        cashBalance += cashAcquired - TRASACTION_FEE;
+
+        // 31 15:59 1461 AMSC sold at $4.37; cash acquired $6384.57; cash balance $10258.96
+        System.out.print(t.toString() + "; ");
+        System.out.print("cash acquired $" + String.format("%.2f", cashAcquired) + "; ");
+        System.out.println("cash balance $" + String.format("%.2f", cashBalance));
+    }
+
+    private void readTrades() throws Exception{
+        FileReader reader = new FileReader(new File("output/" + inputFilename));
+        BufferedReader bufferedReader = new BufferedReader(reader);
+        String line;
+
+        while ((line = bufferedReader.readLine()) != null) {
+            // 03 15:59 buy 2500 shares of RDN
+            String[] tokens = line.split("\\s+");
+            inputTradeList.add(new Transaction(tokens[0], tokens[1], tokens[2],
+                    Integer.parseInt(tokens[3]), new Stock(tokens[tokens.length - 1])));
+        }
+
+        bufferedReader.close();
+        reader.close();
+    }
+
+    public void displayAccountStatus() {
+        System.out.println("Account status: \nCash balance is $" + String.format("%.2f", cashBalance));
+        portfolio.display();
+        System.out.println("TOTAL: $" + String.format("%.2f", cashBalance + portfolio.getTotalValue()));
+    }
+
+
     public static void main(String[] args) {
-        Adversary adversary = new Adversary("2011/10", "2011-10-buy.txt", 100000);
+        // create-trades YEAR-FORMAT MONTH_1 MONTH_2 write-directory
+        Adversary adversary = new Adversary("2011", "10","2011-10-buy.txt", 100000);
         adversary.execute();
     }
 }
