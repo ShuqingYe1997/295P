@@ -11,17 +11,20 @@ import java.util.*;
  * @Date: 2021-2-27
  */
 
-class Trades {
+public class Trades {
     private String inputFilename;
+    private String filePath;
+
     private double cash;
-    private String time;
+    private String time;  // 2001-10
     private String start;
     private String end;
 
     private List<Stock> portfolio;
     private List<Integer> shares;
 
-    public Trades(String time, String inputFilename, double cash) {
+    public Trades(String time,String filePath, String inputFilename, double cash) {
+        this.filePath = filePath;
         this.inputFilename = inputFilename;
         this.cash = cash;
         this.time = time;
@@ -77,7 +80,7 @@ class Trades {
      * 2. get their price at the start trading day (using company name and date and file directory)
      * 3. output trades in the given format
      **/
-    public void saveFile(String filePath)  {
+    public void saveFile()  {
         try {
             readPortfolio();
             readPrices();
@@ -86,19 +89,18 @@ class Trades {
 
             File outputFile = new File(filePath + time + "-trades.txt");
             FileWriter writer  = new FileWriter(outputFile, true);
-
             // buy
             // e.g. 03 15:59 buy 10 shares of SMSI
             for (int i = 0; i < portfolio.size(); i++) {
-                writer.write(start + " 15:59 buy " +  shares.get(i) + " shares of " + portfolio.get(i).symbol + "\n");
+                writer.write(time + "-" + start + " 15:59 buy " +  shares.get(i) + " shares of " + portfolio.get(i).symbol + "\n");
             }
 
             //sell
             for (int i = 0; i < portfolio.size(); i++) {
-                writer.write(end + " 15:59 sell " + shares.get(i) + " shares of " + portfolio.get(i).symbol + "\n");
+                writer.write(time + "-" + end + " 15:59 sell " + shares.get(i) + " shares of " + portfolio.get(i).symbol + "\n");
             }
             writer.close();
-            System.out.println("=================== portfolio saved ===================");
+            System.out.println("=================== Trading file of " + time + " saved ===================");
 
         }catch(Exception e) {
             e.printStackTrace();
@@ -106,7 +108,7 @@ class Trades {
     }
 
     private void readPortfolio() throws Exception {
-        CSVReaderBuilder builder = new CSVReaderBuilder(new FileReader("input/" + inputFilename));
+        CSVReaderBuilder builder = new CSVReaderBuilder(new FileReader("output/" + inputFilename));
         CSVReader reader = builder.withSkipLines(1).build();  // skip header
         String[] nextLine;
         while ((nextLine = reader.readNext()) != null) {
@@ -144,12 +146,4 @@ class Trades {
         }
     }
 }
-
-public class TradeRunner {
-    public static void main(String[] args) {
-        Trades trade = new Trades("2011-10", "2011-10-portfolio.csv", 100000);
-        trade.saveFile("output/");
-    }
-}
-
 

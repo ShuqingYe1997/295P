@@ -12,7 +12,7 @@ import java.util.List;
  */
 
 class Transaction {
-    String day;
+    String date;
     String time;
     String action;
     int shares;
@@ -21,8 +21,8 @@ class Transaction {
     public Transaction() {
     }
 
-    public Transaction(String day, String time, String action, int shares, Stock stock) {
-        this.day = day;
+    public Transaction(String date, String time, String action, int shares, Stock stock) {
+        this.date = date;
         this.time = time;
         this.action = action;
         this.shares = shares;
@@ -31,7 +31,7 @@ class Transaction {
 
     // make a copy
     public Transaction(Transaction t) {
-        this.day = t.day;
+        this.date = t.date;
         this.time = t.time;
         this.action = t.action;
         this.shares = t.shares;
@@ -40,11 +40,11 @@ class Transaction {
 
     // 就为了这个写多态也太麻烦了吧！
     public String toString() {
-        if (action.equals("buy"))  // 31 15:59 1461 AMSC sold at $4.37
-            return day + " " + time + " " + shares + " " + stock.symbol + " "
+        if (action.equals("buy"))  // 2011-10-31 15:59 1461 AMSC sold at $4.37
+            return date + " " + time + " " + shares + " " + stock.symbol + " "
                 + "bought" + " at $" + String.format("%.2f", stock.price);
         else if (action.equals("sell"))
-            return day + " " + time + " " + shares + " " + stock.symbol + " "
+            return date + " " + time + " " + shares + " " + stock.symbol + " "
                     + "sold" + " at $" + String.format("%.2f", stock.price);
         else  // 1326 shares of AUO [$3.78] valued at $5012.28
             return shares + " shares of " + stock.symbol + " "
@@ -111,7 +111,7 @@ class PortFolio {
     public void display() {
         for (Transaction t: tradeList) {
             Transaction dis = new Transaction(t);  // make a copy
-            dis.day = tradeList.get(tradeList.size() - 1).day;  // get the  date of the latest transaction
+            dis.date = tradeList.get(tradeList.size() - 1).date;  // get the  date of the latest transaction
             dis.time = "15:59";
             dis.action = "display";
             try {
@@ -132,7 +132,7 @@ class PortFolio {
 
 class Utils {
     public static void readStream(Transaction t, String year, String month) throws Exception{
-        String filePath = "D:/下载/streaming-tsv/" + year + "/" + month + "/" + t.day + "/streaming.tsv";
+        String filePath = "D:/下载/streaming-tsv/" + year + "/" + month + "/" + t.date.substring(8) + "/streaming.tsv";
         FileReader reader = new FileReader(new File(filePath));
         BufferedReader bufferedReader = new BufferedReader(reader);
         String line;
@@ -342,7 +342,18 @@ public class Adversary {
 
     public static void main(String[] args) {
         // create-trades YEAR-FORMAT MONTH_1 MONTH_2 write-directory
-        Adversary adversary = new Adversary("2011", "10","2011-10-buy.txt", 100000);
+        // MONTH1 can be ignored
+        // write-directory is output/ (currently)
+        final int CASH = 100000;
+        String year = "2011";
+        String month = "12";
+        String writeDirectory = "output/";
+
+        String year_month =  year + "-" + month;
+        Trades trade = new Trades(year_month, writeDirectory, year_month + "-portfolio.csv", CASH);
+        trade.saveFile();
+
+        Adversary adversary = new Adversary(year, month,year_month + "-trades.txt", CASH);
         adversary.execute();
     }
 }

@@ -10,6 +10,7 @@ import java.util.Scanner;
 
 public class ParserRunner {
     public static void main(String[] args) {
+        // TODO:
         System.out.println("Input file path:");
         Scanner scanner = new Scanner(System.in);
         String filePath = scanner.nextLine();
@@ -54,8 +55,9 @@ public class ParserRunner {
             }
         } // end of traversal file dir
 
+        String writeDirectory = "output/";
         for (int i = 10; i <= 12; i++) {
-            File file = new File("output/" + time.substring(0, 5) + i + ".csv");   // e.g. 2001- + month
+            File file = new File(writeDirectory + time.substring(0, 5) + i + ".csv");   // e.g. 2001- + month
             if (!file.exists()) {
                 return;  // can't combine because some months are missing
             }
