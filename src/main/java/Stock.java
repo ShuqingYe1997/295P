@@ -9,12 +9,12 @@ public class Stock {
     double price;
 
     public Stock(String symbol, double price) {
-        this.symbol = symbol;
+        this.symbol = symbol.toUpperCase();
         this.price = price;
     }
 
     public Stock(String symbol) {
-        this.symbol = symbol;
+        this.symbol = symbol.toUpperCase();
     }
 
     @Override

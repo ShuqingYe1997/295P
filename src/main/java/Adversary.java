@@ -345,7 +345,7 @@ public class Adversary {
         // MONTH1 can be ignored
         // write-directory is output/ (currently)
         final int CASH = 100000;
-        String year = "2011";
+        String year = "2001";
         String month = "12";
         String writeDirectory = "output/";
 

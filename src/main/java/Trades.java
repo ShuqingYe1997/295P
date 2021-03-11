@@ -44,7 +44,7 @@ public class Trades {
             end = "30";
         }
         else if (time.equals("2001-12")) {
-            start = "03";
+            start = "04";
             end = "31";
         }
         else if (time.equals("2006-10")) {
