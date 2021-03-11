@@ -44,7 +44,7 @@ public class Trades {
             end = "30";
         }
         else if (time.equals("2001-12")) {
-            start = "03";
+            start = "04";
             end = "31";
         }
         else if (time.equals("2006-10")) {
@@ -88,7 +88,8 @@ public class Trades {
             calculateShares();
 
             File outputFile = new File(filePath + time + "-trades.txt");
-            FileWriter writer  = new FileWriter(outputFile, true);
+            FileWriter writer  = new FileWriter(outputFile, false);
+            writer.flush();
             // buy
             // e.g. 03 15:59 buy 10 shares of SMSI
             for (int i = 0; i < portfolio.size(); i++) {
@@ -132,7 +133,7 @@ public class Trades {
         String[] nextLine;
         int i = 0;
         while ((nextLine = reader.readNext()) != null && i < portfolio.size()) {
-            if (nextLine[0].equals(portfolio.get(i).symbol)) {
+            if (nextLine[0].toUpperCase().equals(portfolio.get(i).symbol)) {
                 portfolio.get(i).setPrice(Double.parseDouble(nextLine[40]));  // start price
                 i++;
             }

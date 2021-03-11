@@ -14,7 +14,7 @@ public class Stock {
     }
 
     public Stock(String symbol) {
-        this.symbol = symbol;
+        this.symbol = symbol.toUpperCase();
     }
 
     @Override

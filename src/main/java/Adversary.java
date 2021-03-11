@@ -71,7 +71,12 @@ class PortFolio {
         if (t.shares * t.stock.price > cashBalance) {
             System.out.println("TRADING WARNING (not fatal): cash balance $" + String.format("%.2f", cashBalance) +
                     " too small to purchase " + t.shares + " shares of " + t.stock.symbol);
-            return false;
+            if(Utils.Force_Buy)
+            {
+                t.shares = (int)(cashBalance / t.stock.price);
+            }
+            else
+                return false;
         }
 
         for (Transaction p : tradeList) {
@@ -92,7 +97,12 @@ class PortFolio {
                 if (p.shares < t.shares) {
                     System.out.println("TRADING WARNING (not fatal): you only have " + p.shares +
                             " shares of " + t.stock.symbol + "; you cannot sell " + t.shares + " shares");
-                    return false;
+                    if(Utils.Force_Buy)
+                    {
+                        t.shares = p.shares;
+                    }
+                    else
+                        return false;
                 } else {
                     p.shares -= t.shares;
                     if (p.shares == 0)
@@ -131,6 +141,8 @@ class PortFolio {
 }
 
 class Utils {
+    static boolean Force_Buy = false;
+
     public static void readStream(Transaction t, String year, String month) throws Exception{
         String filePath = "D:/下载/streaming-tsv/" + year + "/" + month + "/" + t.date.substring(8) + "/streaming.tsv";
         FileReader reader = new FileReader(new File(filePath));
@@ -156,8 +168,13 @@ class Utils {
             }
         }
 
-        // if no transaction at the given time, then go get at the closest time before that
-        setTradingPrice(transactions.get(transactions.size() - 1), t);
+        if(transactions.size() == 0 )
+        {
+            System.out.print("Could not find transaction:" + t.stock.symbol);
+        }
+        else
+           // if no transaction at the given time, then go get at the closest time before that
+           setTradingPrice(transactions.get(transactions.size() - 1), t);
     }
 
     private static void setTradingPrice(String[] tokens, Transaction t) {
