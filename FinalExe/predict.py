@@ -23,7 +23,7 @@ def value_to_float(x):
 def read_data(path):
     # deal with test data
     test = pd.read_csv(path)
-    test=test[int(test['DCV'])>1000000]
+    test = test[test['DCV'].astype(float)>1000000.0 ]
     del test['Last Split']
     del test['Fiscal Year Ends']
     del test['Most recent quarter']
