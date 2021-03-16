@@ -79,7 +79,6 @@ public class FileTXTParser {
         return values;
     }
 
-    // TODO: first and last trading date of a given month should not be hardcoded
     public void getDate(String filepath) {
         start = "00";
         end = "00";
@@ -103,7 +102,7 @@ public class FileTXTParser {
             
         if(dayList.length < 1)
         {
-            //System.out.println("Errorï¼š The profile should have at least two trading dates.");
+            //System.out.println("Error£º The profile should have at least two trading dates.");
             return;
         }
 
