@@ -55,13 +55,15 @@ class Transaction {
 class PortFolio {
     private String year;
     private String month;
+    private String streamingFolder;
 
     private List<Transaction> tradeList;  // 持仓
     private double totalValue;
 
-    public PortFolio(String year, String month) {
+    public PortFolio(String streamingFolder, String year, String month) {
         this.year = year;
         this.month = month;
+        this.streamingFolder = streamingFolder;
         tradeList = new ArrayList<Transaction>();
         totalValue = 0;
     }
@@ -69,8 +71,8 @@ class PortFolio {
     // buy
     public boolean update(Transaction t, double cashBalance) {
         if (t.shares * t.stock.price > cashBalance) {
-            System.out.println("TRADING WARNING (not fatal): cash balance $" + String.format("%.2f", cashBalance) +
-                    " too small to purchase " + t.shares + " shares of " + t.stock.symbol);
+            //System.out.println("TRADING WARNING (not fatal): cash balance $" + String.format("%.2f", cashBalance) +
+            //        " too small to purchase " + t.shares + " shares of " + t.stock.symbol);
             if(Utils.Force_Buy)
             {
                 t.shares = (int)(cashBalance / t.stock.price);
@@ -95,8 +97,8 @@ class PortFolio {
         for (Transaction p : tradeList) {
             if (p.stock.symbol.equals(t.stock.symbol)) {
                 if (p.shares < t.shares) {
-                    System.out.println("TRADING WARNING (not fatal): you only have " + p.shares +
-                            " shares of " + t.stock.symbol + "; you cannot sell " + t.shares + " shares");
+                    //System.out.println("TRADING WARNING (not fatal): you only have " + p.shares +
+                    //        " shares of " + t.stock.symbol + "; you cannot sell " + t.shares + " shares");
                     if(Utils.Force_Buy)
                     {
                         t.shares = p.shares;
@@ -112,8 +114,8 @@ class PortFolio {
             }
         }
         // not holding
-        System.out.println("TRADING WARNING (not fatal): you only have 0" +
-                " shares of " + t.stock.symbol + "; you cannot sell " + t.shares + " shares");
+        //System.out.println("TRADING WARNING (not fatal): you only have 0" +
+        //        " shares of " + t.stock.symbol + "; you cannot sell " + t.shares + " shares");
         return false;
     }
 
@@ -125,14 +127,14 @@ class PortFolio {
             dis.time = "15:59";
             dis.action = "display";
             try {
-                Utils.readStream(dis, year, month);
+                Utils.readStream(this.streamingFolder, dis, year, month);
             }catch (Exception e) {
                 e.printStackTrace();
             }
             totalValue += dis.shares * dis.stock.price;
-            System.out.println(dis.toString());
+            //System.out.println(dis.toString());
         }
-        System.out.println("Total stocks' value: $" + String.format("%.2f", totalValue));
+        //System.out.println("Total stocks' value: $" + String.format("%.2f", totalValue));
     }
 
     public double getTotalValue() {
@@ -143,8 +145,8 @@ class PortFolio {
 class Utils {
     static boolean Force_Buy = false;
 
-    public static void readStream(Transaction t, String year, String month) throws Exception{
-        String filePath = "D:/下载/streaming-tsv/" + year + "/" + month + "/" + t.date.substring(8) + "/streaming.tsv";
+    public static void readStream(String directory_date_path, Transaction t, String year, String month) throws Exception{
+        String filePath = directory_date_path + "/" + t.date.substring(8) + "/streaming.tsv";;
         FileReader reader = new FileReader(new File(filePath));
         BufferedReader bufferedReader = new BufferedReader(reader);
         String line;
@@ -157,12 +159,13 @@ class Utils {
 
                 if(tokens[1].compareTo(t.time) >= 0) {
                     if (tokens[1].compareTo(t.time) > 0) {
-                        System.out.println("TRADING ERROR: Trade of " + t.stock.symbol +
-                                " ordered at " + t.time + " but first quote is " + tokens[1] + "; " +
-                                "trade will occur at " + tokens[1]);
+                        //System.out.println("TRADING ERROR: Trade of " + t.stock.symbol +
+                        //        " ordered at " + t.time + " but first quote is " + tokens[1] + "; " +
+                        //        "trade will occur at " + tokens[1]);
                     }
-//                    System.out.println(line);
+//                  System.out.println(line);
                     setTradingPrice(tokens, t);
+                    bufferedReader.close();
                     return;
                 }
             }
@@ -170,7 +173,7 @@ class Utils {
 
         if(transactions.size() == 0 )
         {
-            System.out.print("Could not find transaction:" + t.stock.symbol);
+            //System.out.print("Could not find transaction:" + t.stock.symbol);
         }
         else
            // if no transaction at the given time, then go get at the closest time before that
@@ -272,34 +275,36 @@ public class Adversary {
     private String month;
     private String inputFilename;
     private double cashBalance;
+    private String streamingMonthFolder;
 
     private List<Transaction> inputTradeList;  // 委托
     private PortFolio portfolio;
 
     public final int TRASACTION_FEE = 10;
 
-    public Adversary(String year, String month, String inputFilename, double cash) {
+    public Adversary(String streamingMonthFolder, String year, String month, String inputFilename, double cash) {
         this.year = year;
         this.month = month;
         this.inputFilename = inputFilename;
         this.cashBalance = cash;
+        this.streamingMonthFolder = streamingMonthFolder;
 
         this.inputTradeList = new ArrayList<Transaction>();
-        this.portfolio = new PortFolio(year, month);
+        this.portfolio = new PortFolio(streamingMonthFolder, year, month);
     }
 
     public void execute() {
         try {
             readTrades();
             for (Transaction t: inputTradeList) {
-                Utils.readStream(t, year, month);  // t's time might be changed, price will be set
+                Utils.readStream(this.streamingMonthFolder,t, year, month);  // t's time might be changed, price will be set
                 if (t.action.equals("buy")) {
                     buy(t);
                 }
                 else if (t.action.equals("sell"))
                     sell(t);
-                else
-                    System.out.println("Syntax error in " + inputFilename + "!!!");
+                //else
+                //System.out.println("Syntax error in " + inputFilename + "!!!");
             }
             displayAccountStatus();
 
@@ -316,9 +321,9 @@ public class Adversary {
         cashBalance -= cashSpent + TRASACTION_FEE;
 
         // 03 15:59 1461 AMSC bought at $3.45; cash spent $5040.45; cash balance $94949.55
-        System.out.print(t.toString() + "; ");
-        System.out.print("cash spent $" + String.format("%.2f", cashSpent) + "; ");
-        System.out.println("cash balance $" + String.format("%.2f", cashBalance));
+        //System.out.print(t.toString() + "; ");
+        //System.out.print("cash spent $" + String.format("%.2f", cashSpent) + "; ");
+        //System.out.println("cash balance $" + String.format("%.2f", cashBalance));
     }
 
     private void sell(Transaction t) {
@@ -329,9 +334,9 @@ public class Adversary {
         cashBalance += cashAcquired - TRASACTION_FEE;
 
         // 31 15:59 1461 AMSC sold at $4.37; cash acquired $6384.57; cash balance $10258.96
-        System.out.print(t.toString() + "; ");
-        System.out.print("cash acquired $" + String.format("%.2f", cashAcquired) + "; ");
-        System.out.println("cash balance $" + String.format("%.2f", cashBalance));
+        //System.out.print(t.toString() + "; ");
+        //System.out.print("cash acquired $" + String.format("%.2f", cashAcquired) + "; ");
+        //System.out.println("cash balance $" + String.format("%.2f", cashBalance));
     }
 
     private void readTrades() throws Exception{
@@ -351,26 +356,46 @@ public class Adversary {
     }
 
     public void displayAccountStatus() {
-        System.out.println("Account status: \nCash balance is $" + String.format("%.2f", cashBalance));
+        //System.out.println("Account status: \nCash balance is $" + String.format("%.2f", cashBalance));
         portfolio.display();
-        System.out.println("TOTAL: $" + String.format("%.2f", cashBalance + portfolio.getTotalValue()));
+        //System.out.println("TOTAL: $" + String.format("%.2f", cashBalance + portfolio.getTotalValue()));
     }
 
+
+/*
+ * Adversary [mode] [year] [month] [steamDirectory_MONTH] [writeDirectory]
+ * [mode] : 0 - genertate trade file only
+ *          1 - genertate trade file and caculate Adversary
+ */
 
     public static void main(String[] args) {
         // create-trades YEAR-FORMAT MONTH_1 MONTH_2 write-directory
         // MONTH1 can be ignored
         // write-directory is output/ (currently)
-        final int CASH = 100000;
-        String year = "2011";
-        String month = "12";
-        String writeDirectory = "output/";
+        if(args.length != 5) 
+        {
+            //System.out.println("Wrong Arguments. Adversary [mode] [year-month] [writeDirectory].");
+            return;
+        }
 
-        String year_month =  year + "-" + month;
-        Trades trade = new Trades(year_month, writeDirectory, year_month + "-portfolio.csv", CASH);
+        final int CASH = 100000;
+
+        int mode = Integer.parseInt(args[0]);
+        String streamDirectory = args[3];
+        String writeDirectory = args[4];
+
+        String year = args[1];
+        String month = args[2];
+        String year_month = year+"-"+month;
+
+        Trades trade = new Trades(year_month, streamDirectory, 
+            writeDirectory, CASH);
         trade.saveFile();
 
-        Adversary adversary = new Adversary(year, month,year_month + "-trades.txt", CASH);
-        adversary.execute();
+        if(mode == 1)
+        {
+            Adversary adversary = new Adversary(streamDirectory, year, month, year_month + "-trades.txt", CASH);
+            adversary.execute();
+        }
     }
 }

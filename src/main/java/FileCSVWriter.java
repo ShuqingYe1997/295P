@@ -35,11 +35,11 @@ public class FileCSVWriter {
         cnt++;
     }
 
-    public void saveFile() throws Exception {
-        File dir = new File("output");
+    public void saveFile(String folder, String filePath) throws Exception {
+        File dir = new File(folder);
         if (!dir.exists())
             dir.mkdir();
-        String filePath = "output/"+ outputFilename + ".csv";
+
         File outputFile = new File(filePath);
         CSVWriter writer = new CSVWriter(new FileWriter(outputFile, true));
 
@@ -60,7 +60,7 @@ public class FileCSVWriter {
         writer.writeAll(data);
 
         writer.close();
-        if (cnt % 100 == 0)
-            System.out.println("============" + cnt + " companies saved." + "============");
+        //if (cnt % 100 == 0)
+            //System.out.println("============" + cnt + " companies saved." + "============");
     }
 }

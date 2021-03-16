@@ -26,7 +26,7 @@ public class FileTXTParser {
 
     public FileTXTParser(String time, String companyName, String inputFilePath) {
         this.time = time;
-        getDate();  // assign start and end date
+        getDate(inputFilePath);  // assign start and end date
 
         this.companyName = companyName;
         this.inputFilePath = inputFilePath;
@@ -37,7 +37,7 @@ public class FileTXTParser {
         this.values = new ArrayList<String>();
 
         if(marketReturn == -1) {
-            File inputFile = new File(ParserRunner.class.getClassLoader().getResource("GSPC").getPath());
+            File inputFile = new File("GSPC");
             String s1 = readFromGSPC(inputFile, time + "-" + start);
             String s2 = readFromGSPC(inputFile, time + "-" + end);
             marketReturn = calculateReturnRatio(s1, s2);
@@ -45,22 +45,30 @@ public class FileTXTParser {
     }
 
     public void parseFile() throws Exception {
-        File inputFile1 = new File(inputFilePath + "/" + start + "/close");
-        String price1 = readFromFile(inputFile1, companyName, "ClosePrice");
-        String volume1 = readFromFile(inputFile1, companyName, "Volume");
+        try
+        {
+            File inputFile1 = new File(inputFilePath + "/" + start + "/close");
+            String price1 = readFromFile(inputFile1, companyName, "ClosePrice");
+            String volume1 = readFromFile(inputFile1, companyName, "Volume");
+    
+            File inputFile2 = new File(inputFilePath + "/" + end + "/close");
+            String price2 = readFromFile(inputFile2, companyName, "ClosePrice");
+    
+            double companyReturn = calculateReturnRatio(price1, price2);
+            double DCV = calculateDCV(price1, volume1);
+    
+            values.add(price1);
+            values.add(price2);
+            values.add(String.format("%.2f", companyReturn));
+            values.add(String.format("%.2f", marketReturn));
+            values.add(String.format("%.2f", DCV));
+            values.add(String.format("%.2f", companyReturn - marketReturn));
+        }
+        catch(Exception e)
+        {
+            
+        }
 
-        File inputFile2 = new File(inputFilePath + "/" + end + "/close");
-        String price2 = readFromFile(inputFile2, companyName, "ClosePrice");
-
-        double companyReturn = calculateReturnRatio(price1, price2);
-        double DCV = calculateDCV(price1, volume1);
-
-        values.add(price1);
-        values.add(price2);
-        values.add(String.format("%.2f", companyReturn));
-        values.add(String.format("%.2f", marketReturn));
-        values.add(String.format("%.2f", DCV));
-        values.add(String.format("%.2f", companyReturn - marketReturn));
     }
 
     public List<String> getAttributes() {
@@ -72,45 +80,66 @@ public class FileTXTParser {
     }
 
     // TODO: first and last trading date of a given month should not be hardcoded
-    public void getDate() {
-        if (time.equals("2001-10")) {
-            start = "02";
-            end = "31";
+    public void getDate(String filepath) {
+        start = "00";
+        end = "00";
+
+        String[] dayList;
+        File month_folder = new File(filepath);
+
+        // Populates the array with names of files and directories
+        dayList = month_folder.list();
+
+        // sort the list
+        for(int i = 0; i< dayList.length-1; i++) {
+            for (int j = i+1; j< dayList.length; j++) {
+               if(dayList[i].compareTo(dayList[j])>0) {
+                  String temp = dayList[i];
+                  dayList[i] = dayList[j];
+                  dayList[j] = temp;
+               }
+            }
+         }
+            
+        if(dayList.length < 1)
+        {
+            //System.out.println("Error： The profile should have at least two trading dates.");
+            return;
         }
-        else if (time.equals("2001-11")) {
-            start = "01";
-            end = "30";
+
+        int i = 0;
+        while(i < dayList.length)
+        {
+            String folderName = dayList[i];
+            if(folderName.length() == 2
+             && folderName.matches("-?\\d+"))
+            {
+                start = folderName;
+                break;
+            }
+            i++;
         }
-        else if (time.equals("2001-12")) {
-            start = "03";
-            end = "31";
+        
+        i = 0;
+        
+        while(i < dayList.length)
+        {
+            String folderName = dayList[dayList.length-i-1];
+            if(folderName.length() == 2
+             && folderName.matches("-?\\d+"))
+            {
+                end = folderName;
+                break;
+            }
+            i++;
+        }        
+
+        if(start.equals("00") ||
+        end.equals("00"))
+        {
+            //System.out.println("Erorr: Wrong date folder");
         }
-        else if (time.equals("2006-10")) {
-            start = "02";
-            end = "31";
-        }
-        else if (time.equals("2006-11")) {
-            start = "01";
-            end = "30";
-        }
-        else if (time.equals("2006-12")) {
-            start = "01";
-            end = "29";
-        }
-        else if (time.equals("2011-10")) {
-            start = "03";
-            end = "31";
-        }else if (time.equals("2011-11")) {
-            start = "01";
-            end = "30";
-        }
-        else if (time.equals("2011-12")) {
-            start = "01";
-            end = "30";
-        }
-        else {
-            System.err.println("You shouldn't be here!");
-        }
+
     }
 
     private String readFromFile(File file, String companyName, String label) throws IOException {
@@ -120,11 +149,17 @@ public class FileTXTParser {
             String[] fields = line.trim().split("\\s+");
             if (fields[0].toLowerCase().equals(companyName.toLowerCase())) {
                 if (label.equals("ClosePrice"))
+                {
+                    bufferedReader.close();
                     return fields[2];  // close price
+                }
                 else if (label.equals("Volume"))
+                {
+                    bufferedReader.close();
                     return fields[5];  // daily volume (share)
-            }
+                }            }
         }
+        bufferedReader.close();
         return "";
     }
 
@@ -135,9 +170,13 @@ public class FileTXTParser {
             while ((line = bufferedReader.readLine()) != null) {
                 String[] fields = line.trim().split("\\s+");
                 if (fields[0].equals(date))
+                {
+                    bufferedReader.close();
                     return fields[4];  // close
 //                    return fields[fields.length - 1];  // close price
+                }
             }
+            bufferedReader.close();
         }
         catch (IOException e) {
             e.printStackTrace();

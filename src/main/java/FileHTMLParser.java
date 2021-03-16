@@ -80,7 +80,7 @@ public class FileHTMLParser {
                 if (tr.childrenSize() >= 2) {
                     Element name = tr.child(0);
                     Element value = tr.child(1);
-//                    System.out.printf("%s:\t%s\n", handleAttributeName(name), handleAttributeValue(value));
+//                    //System.out.printf("%s:\t%s\n", handleAttributeName(name), handleAttributeValue(value));
                     attributes.add(handleAttributeName(name));
                     values.add(handleAttributeValue(value));
                 }
@@ -190,7 +190,7 @@ public class FileHTMLParser {
             String value = "none";
             if (element != null)
                 value = element.text();
-//            System.out.println(HEADER.get(i) + "\t" + value);
+//            //System.out.println(HEADER.get(i) + "\t" + value);
             values.add(i, value);
         }
     }
@@ -436,7 +436,13 @@ public class FileHTMLParser {
 
     private String calculateRelativeChange(String stock, String sp) {
         if (stock.equals("none") || stock.equals("N/A") || sp.equals("none") || sp.equals("N/A"))
+        {
             return "none";
+        }
+        if(stock.contains("M") || sp.contains("M"))     //Wrong data 
+        {
+            return "none";
+        }
         double stockRatio = Double.parseDouble(stock.replace("%",""));
         double spRatio = Double.parseDouble(sp.replace("%", ""));
         return String.format("%.2f", stockRatio - spRatio) + "%";

@@ -53,6 +53,6 @@ public class FileCSVCombiner {
             reader.close();  // close after reading one file
         }
         writer.close();  // close after writing all 3 files
-        System.out.println("********************" + time + ".csv saved." + "********************");
+        //System.out.println("********************" + time + ".csv saved." + "********************");
     }
 }
