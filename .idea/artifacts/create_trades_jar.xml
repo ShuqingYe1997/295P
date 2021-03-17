@@ -1,5 +1,5 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="StockPrediction:jar">
+  <artifact type="jar" name="create-trades:jar">
     <output-path>$PROJECT_DIR$/FinalExe</output-path>
     <root id="archive" name="StockPrediction.jar">
       <element id="directory" name="META-INF">
