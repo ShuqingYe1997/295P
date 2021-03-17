@@ -40,31 +40,23 @@ public class ParserRunner {
         }
     }
 
-    public static void process_profile_folder(String filename, String profile_path, 
+    public static void process_profile_folder(String dir, String profile_path,
     String writeDirectory, String outFilePath, String time, String inputFolderPath)
     {
-        String newProfilePath = profile_path + "/" + filename;
-        String[] profile_files;
-        File profile_folder = new File(newProfilePath);
-        // Populates the array with names of files and directories
-        profile_files = profile_folder.list();
+        File profile_folder = new File(profile_path + "/" + dir);
+        // profile_folder now is [path]\2006-11\2006\11\profiles\Yahoo\US\01\p\a
+
+        if (!profile_folder.exists()) {
+            dir = dir.toUpperCase();
+            profile_folder = new File(profile_path + "/" + dir);
+        }
+        String[] profile_files = profile_folder.list();
 
         // sort the list
         for(int i = 0; i < profile_files.length; i++) {
-            String subfilename =  profile_files[i];
-            // skip current folder and uplevel folder
-            if(subfilename.equals(".") || subfilename.equals("..")) continue;
-            String processing_file = newProfilePath + "/" +subfilename;
-            //System.out.println("profile path: " + profilePath);
-            File file = new File(processing_file);
-            if(file.isFile())
-            {
-                process_profile_file(subfilename, newProfilePath, writeDirectory, outFilePath, time, inputFolderPath);
-            }
-            else{
-                process_profile_folder(subfilename, newProfilePath, writeDirectory, outFilePath, time, inputFolderPath);
-            }
-        } // end of traversal file dir
+            String filename =  profile_files[i];
+            process_profile_file(filename, profile_path + "/" + dir, writeDirectory, outFilePath, time, inputFolderPath);
+        }
     }
 
     public static void main(String[] args) {
@@ -73,16 +65,22 @@ public class ParserRunner {
         filePath = filePath.replace("\\", "/");
         String writeDirectory = args[2] + "/";
 
+//        String year = "2006";
+//        String filePath = "D:\\下载\\2006-11\\2006\\11";
+//        filePath = filePath.replace("\\", "/");
+//        String writeDirectory = "FinalExe/output/";
 
-        String month = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.length());
+
+        String month = filePath.substring(filePath.lastIndexOf("/") + 1);
 
         String time  = year + "-" + month;
         String outFilePath = writeDirectory + time + ".csv";
 
-        String profile_path = filePath + "/profiles/Yahoo/US/01/";
+        String profile_path = filePath + "/profiles/Yahoo/US/01/p/";
 
-        process_profile_folder("p", profile_path, writeDirectory, outFilePath, time, filePath);
- 
+        // ATTENTION! We only need to read dir a to z (or A to Z)
+        for (char dir = 'a'; dir <= 'z'; dir++)
+            process_profile_folder(dir + "", profile_path, writeDirectory, outFilePath, time, filePath);
 
         // for (int i = 10; i <= 12; i++) {
         //     File file = new File(writeDirectory + time.substring(0, 5) + i + ".csv");   // e.g. 2001- + month

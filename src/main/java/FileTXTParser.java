@@ -102,7 +102,7 @@ public class FileTXTParser {
             
         if(dayList.length < 1)
         {
-            //System.out.println("Error£º The profile should have at least two trading dates.");
+            //System.out.println("Errorï¿½ï¿½ The profile should have at least two trading dates.");
             return;
         }
 
