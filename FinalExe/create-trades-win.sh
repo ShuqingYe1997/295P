@@ -1,5 +1,4 @@
 # install necessary python libs
-pip3 install -r requirements.txt | grep -v 'already satisfied'
 pip3 install --upgrade pip setuptools wheel --user
 pip3 install shap --user
 pip3 install catboost --user

@@ -113,3 +113,9 @@ input/2011/*
 output/2011-10-buy.txt
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij
+/src/main/java/AdversaryLocal.java
+FinalExe/output/2006-12-portfolio.csv
+FinalExe/output/2006-12-trades.txt
+FinalExe/output/2006-12.csv
+src/main/java/AdversaryLocal.java
+src/test/

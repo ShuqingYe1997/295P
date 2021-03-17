@@ -2,7 +2,6 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 
 import java.io.*;
-import java.time.Year;
 import java.util.*;
 
 /**
@@ -161,8 +160,13 @@ public class Trades {
         int i = 0;
         while ((nextLine = reader.readNext()) != null && i < portfolio.size()) {
             if (nextLine[0].toUpperCase().equals(portfolio.get(i).symbol)) {
-                portfolio.get(i).setPrice(Double.parseDouble(nextLine[40]));  // start price
-                i++;
+                if (!nextLine[40].equals("")) {
+//                    System.out.println(nextLine[0]);
+                    portfolio.get(i).setPrice(Double.parseDouble(nextLine[40]));  // start price
+                    i++;
+                }
+                else  // price is empty
+                    portfolio.remove(i);
             }
         }
         reader.close();
