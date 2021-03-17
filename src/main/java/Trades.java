@@ -118,13 +118,14 @@ public class Trades {
             writer.flush();
             // buy
             // e.g. 03 15:59 buy 10 shares of SMSI
+            // NOTE: change 15:59 to 15:55 to avoid weird price
             for (int i = 0; i < portfolio.size(); i++) {
-                writer.write(time + "-" + start + " 15:59 buy " +  shares.get(i) + " shares of " + portfolio.get(i).symbol + "\n");
+                writer.write(time + "-" + start + " 15:55 buy " +  shares.get(i) + " shares of " + portfolio.get(i).symbol + "\n");
             }
 
             //sell
             for (int i = 0; i < portfolio.size(); i++) {
-                writer.write(time + "-" + end + " 15:59 sell " + shares.get(i) + " shares of " + portfolio.get(i).symbol + "\n");
+                writer.write(time + "-" + end + " 15:55 sell " + shares.get(i) + " shares of " + portfolio.get(i).symbol + "\n");
             }
             writer.close();
             //System.out.println("=================== Trading file of " + time + " saved ===================");
