@@ -71,11 +71,16 @@ class PortFolio {
     // buy
     public boolean update(Transaction t, double cashBalance) {
         if (t.shares * t.stock.price > cashBalance) {
-            //System.out.println("TRADING WARNING (not fatal): cash balance $" + String.format("%.2f", cashBalance) +
-            //        " too small to purchase " + t.shares + " shares of " + t.stock.symbol);
-            if(Utils.Force_Buy)
+            System.out.println("TRADING WARNING (not fatal): cash balance $" + String.format("%.2f", cashBalance) +
+                    " too small to purchase " + t.shares + " shares of " + t.stock.symbol);
+            if(Utils.Force_Trade)
             {
-                t.shares = (int)(cashBalance / t.stock.price);
+                // Trading fee has to be included
+                if (cashBalance - Utils.TRANSACTION_FEE <= 0) {
+                    return false;
+                }
+                t.shares = (int)((cashBalance - Utils.TRANSACTION_FEE) / t.stock.price);
+                System.out.println("TRADING WARNING (not fatal): Can ONLY Buy " + t.shares + " shares of " + t.stock.symbol);
             }
             else
                 return false;
@@ -97,25 +102,25 @@ class PortFolio {
         for (Transaction p : tradeList) {
             if (p.stock.symbol.equals(t.stock.symbol)) {
                 if (p.shares < t.shares) {
-                    //System.out.println("TRADING WARNING (not fatal): you only have " + p.shares +
-                    //        " shares of " + t.stock.symbol + "; you cannot sell " + t.shares + " shares");
-                    if(Utils.Force_Buy)
-                    {
+                    System.out.println("TRADING WARNING (not fatal): you only have " + p.shares +
+                            " shares of " + t.stock.symbol + "; you cannot sell " + t.shares + " shares");
+                    if (Utils.Force_Trade) {
                         t.shares = p.shares;
-                    }
-                    else
+                        System.out.println("TRADING WARNING (not fatal): Sell " + t.shares +
+                                " shares of " + t.stock.symbol +
+                                ". That's all the shares you have.");
+                    } else
                         return false;
-                } else {
-                    p.shares -= t.shares;
-                    if (p.shares == 0)
-                        tradeList.remove(p);
-                    return true;
                 }
+                p.shares -= t.shares;
+                if (p.shares == 0)
+                    tradeList.remove(p);
+                return true;
             }
         }
         // not holding
-        //System.out.println("TRADING WARNING (not fatal): you only have 0" +
-        //        " shares of " + t.stock.symbol + "; you cannot sell " + t.shares + " shares");
+        System.out.println("TRADING WARNING (not fatal): you only have 0" +
+                " shares of " + t.stock.symbol + "; you cannot sell " + t.shares + " shares");
         return false;
     }
 
@@ -132,9 +137,9 @@ class PortFolio {
                 e.printStackTrace();
             }
             totalValue += dis.shares * dis.stock.price;
-            //System.out.println(dis.toString());
+            System.out.println(dis.toString());
         }
-        //System.out.println("Total stocks' value: $" + String.format("%.2f", totalValue));
+        System.out.println("Total stocks' value: $" + String.format("%.2f", totalValue));
     }
 
     public double getTotalValue() {
@@ -143,7 +148,8 @@ class PortFolio {
 }
 
 class Utils {
-    static boolean Force_Buy = false;
+    static boolean Force_Trade = true;
+    static final int TRANSACTION_FEE = 10;
 
     public static void readStream(String directory_date_path, Transaction t, String year, String month) throws Exception{
         String filePath = directory_date_path + "/" + t.date.substring(8) + "/streaming.tsv";;
@@ -159,11 +165,10 @@ class Utils {
 
                 if(tokens[1].compareTo(t.time) >= 0) {
                     if (tokens[1].compareTo(t.time) > 0) {
-                        //System.out.println("TRADING ERROR: Trade of " + t.stock.symbol +
-                        //        " ordered at " + t.time + " but first quote is " + tokens[1] + "; " +
-                        //        "trade will occur at " + tokens[1]);
+                        System.out.println("TRADING ERROR: Trade of " + t.stock.symbol +
+                                " ordered at " + t.time + " but first quote is " + tokens[1] + "; " +
+                                "trade will occur at " + tokens[1]);
                     }
-//                  System.out.println(line);
                     setTradingPrice(tokens, t);
                     bufferedReader.close();
                     return;
@@ -173,7 +178,7 @@ class Utils {
 
         if(transactions.size() == 0 )
         {
-            //System.out.print("Could not find transaction:" + t.stock.symbol);
+            System.out.print("Could not find transaction:" + t.stock.symbol);
         }
         else
            // if no transaction at the given time, then go get at the closest time before that
@@ -280,8 +285,6 @@ public class Adversary {
     private List<Transaction> inputTradeList;  // 委托
     private PortFolio portfolio;
 
-    public final int TRASACTION_FEE = 10;
-
     public Adversary(String streamingMonthFolder, String year, String month, String inputFilename, double cash) {
         this.year = year;
         this.month = month;
@@ -303,8 +306,8 @@ public class Adversary {
                 }
                 else if (t.action.equals("sell"))
                     sell(t);
-                //else
-                //System.out.println("Syntax error in " + inputFilename + "!!!");
+                else
+                System.out.println("Syntax error in " + inputFilename + "!!!");
             }
             displayAccountStatus();
 
@@ -318,12 +321,12 @@ public class Adversary {
             return;
 
         double cashSpent = t.shares * t.stock.price;
-        cashBalance -= cashSpent + TRASACTION_FEE;
+        cashBalance -= cashSpent + Utils.TRANSACTION_FEE;
 
         // 03 15:59 1461 AMSC bought at $3.45; cash spent $5040.45; cash balance $94949.55
-        //System.out.print(t.toString() + "; ");
-        //System.out.print("cash spent $" + String.format("%.2f", cashSpent) + "; ");
-        //System.out.println("cash balance $" + String.format("%.2f", cashBalance));
+        System.out.print(t.toString() + "; ");
+        System.out.print("cash spent $" + String.format("%.2f", cashSpent) + "; ");
+        System.out.println("cash balance $" + String.format("%.2f", cashBalance));
     }
 
     private void sell(Transaction t) {
@@ -331,16 +334,16 @@ public class Adversary {
            return;
 
         double cashAcquired = t.shares * t.stock.price;
-        cashBalance += cashAcquired - TRASACTION_FEE;
+        cashBalance += cashAcquired - Utils.TRANSACTION_FEE;
 
         // 31 15:59 1461 AMSC sold at $4.37; cash acquired $6384.57; cash balance $10258.96
-        //System.out.print(t.toString() + "; ");
-        //System.out.print("cash acquired $" + String.format("%.2f", cashAcquired) + "; ");
-        //System.out.println("cash balance $" + String.format("%.2f", cashBalance));
+        System.out.print(t.toString() + "; ");
+        System.out.print("cash acquired $" + String.format("%.2f", cashAcquired) + "; ");
+        System.out.println("cash balance $" + String.format("%.2f", cashBalance));
     }
 
     private void readTrades() throws Exception{
-        FileReader reader = new FileReader(new File("output/" + inputFilename));
+        FileReader reader = new FileReader(new File("FinalExe/output/" + inputFilename));
         BufferedReader bufferedReader = new BufferedReader(reader);
         String line;
 
@@ -356,16 +359,16 @@ public class Adversary {
     }
 
     public void displayAccountStatus() {
-        //System.out.println("Account status: \nCash balance is $" + String.format("%.2f", cashBalance));
+        System.out.println("Account status: \nCash balance is $" + String.format("%.2f", cashBalance));
         portfolio.display();
-        //System.out.println("TOTAL: $" + String.format("%.2f", cashBalance + portfolio.getTotalValue()));
+        System.out.println("TOTAL: $" + String.format("%.2f", cashBalance + portfolio.getTotalValue()));
     }
 
 
 /*
  * Adversary [mode] [year] [month] [steamDirectory_MONTH] [writeDirectory]
- * [mode] : 0 - genertate trade file only
- *          1 - genertate trade file and caculate Adversary
+ * [mode] : 0 - generate trade file only
+ *          1 - generate trade file and calculate Adversary
  */
 
     public static void main(String[] args) {
