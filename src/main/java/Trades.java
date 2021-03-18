@@ -152,31 +152,34 @@ public class Trades {
     }
 
     private void readPrices() throws Exception {
-        CSVReaderBuilder builder = new CSVReaderBuilder(new FileReader(this.monthlyDataPath));
-        CSVReader reader = builder.withSkipLines(1).build();  // skip header
 
         // reduce time complexity
         // otherwise, T(n) = # of companies in portfolio * # of companies in monthly csv
-        Collections.sort(portfolio, new Comparator<Stock>() {
-            public int compare(Stock o1, Stock o2) {
-                return o1.symbol.compareTo(o2.symbol);
-            }
-        });
+//        Collections.sort(portfolio, new Comparator<Stock>() {
+//            public int compare(Stock o1, Stock o2) {
+//                return o1.symbol.compareTo(o2.symbol);
+//            }
+//        });
 
         String[] nextLine;
-        int i = 0;
-        while ((nextLine = reader.readNext()) != null && i < portfolio.size()) {
-            if (nextLine[0].toUpperCase().equals(portfolio.get(i).symbol)) {
-                if (!nextLine[40].equals("")) {
-//                    System.out.println(nextLine[0]);
-                    portfolio.get(i).setPrice(Double.parseDouble(nextLine[40]));  // start price
-                    i++;
+        for (int i = 0; i < portfolio.size();) {
+            CSVReader reader =
+                    new CSVReaderBuilder(new FileReader(this.monthlyDataPath)).withSkipLines(1).build();  // skip header;
+
+            while ((nextLine = reader.readNext()) != null) {
+                if (nextLine[0].toUpperCase().equals(portfolio.get(i).symbol)) { // if hit
+                    if (!nextLine[40].equals("")) {
+                        portfolio.get(i).setPrice(Double.parseDouble(nextLine[40]));  // start price
+                        i++;
+                    }
+                    else { // price is empty
+                        portfolio.remove(i); // remove dirty data
+                    }
+                    break;
                 }
-                else  // price is empty
-                    portfolio.remove(i);
             }
+            reader.close();
         }
-        reader.close();
     }
 
     private void calculateShares() {
