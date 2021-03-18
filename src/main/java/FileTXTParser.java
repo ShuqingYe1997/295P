@@ -90,22 +90,10 @@ public class FileTXTParser {
             return;
         }
 
-        String[] dayList;
-        File month_folder = new File(filepath);
-
         // Populates the array with names of files and directories
-        dayList = month_folder.list();
-
-        // sort the list
-        for(int i = 0; i< dayList.length-1; i++) {
-            for (int j = i+1; j< dayList.length; j++) {
-               if(dayList[i].compareTo(dayList[j])>0) {
-                  String temp = dayList[i];
-                  dayList[i] = dayList[j];
-                  dayList[j] = temp;
-               }
-            }
-         }
+        File month_folder = new File(filepath);
+        String[] dayList = month_folder.list();
+        Arrays.sort(dayList);
             
         if(dayList.length < 1)
         {

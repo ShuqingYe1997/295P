@@ -48,22 +48,22 @@ public class Trades {
             return;
         }
 
-        String[] dayList;
-        File month_folder = new File(streamDirectory);
 
         // Populates the array with names of files and directories
-        dayList = month_folder.list();
+        File month_folder = new File(streamDirectory);
+        String[] dayList = month_folder.list();
 
+//        for(int i = 0; i< dayList.length-1; i++) {
+//            for (int j = i+1; j< dayList.length; j++) {
+//               if(dayList[i].compareTo(dayList[j])>0) {
+//                  String temp = dayList[i];
+//                  dayList[i] = dayList[j];
+//                  dayList[j] = temp;
+//               }
+//            }
+//         }
         // sort the list
-        for(int i = 0; i< dayList.length-1; i++) {
-            for (int j = i+1; j< dayList.length; j++) {
-               if(dayList[i].compareTo(dayList[j])>0) {
-                  String temp = dayList[i];
-                  dayList[i] = dayList[j];
-                  dayList[j] = temp;
-               }
-            }
-         }
+        Arrays.sort(dayList);
             
         if(dayList.length < 1)
         {
