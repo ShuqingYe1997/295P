@@ -41,6 +41,13 @@ public class Trades {
         start = "0";
         end = "0";
 
+        // 2001-12-03 is a public holiday
+        if (time.equals("2001-12")) {
+            start = "04";
+            end = "31";
+            return;
+        }
+
         String[] dayList;
         File month_folder = new File(streamDirectory);
 

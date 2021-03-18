@@ -65,12 +65,6 @@ public class ParserRunner {
         filePath = filePath.replace("\\", "/");
         String writeDirectory = args[2] + "/";
 
-//        String year = "2006";
-//        String filePath = "D:\\下载\\2006-11\\2006\\11";
-//        filePath = filePath.replace("\\", "/");
-//        String writeDirectory = "FinalExe/output/";
-
-
         String month = filePath.substring(filePath.lastIndexOf("/") + 1);
 
         String time  = year + "-" + month;

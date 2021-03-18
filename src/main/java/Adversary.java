@@ -106,7 +106,7 @@ class PortFolio {
                             " shares of " + t.stock.symbol + "; you cannot sell " + t.shares + " shares");
                     if (Utils.Force_Trade) {
                         t.shares = p.shares;
-                        System.out.println("TRADING WARNING (not fatal): Sell " + t.shares +
+                        System.out.println("TRADING WARNING (not fatal): Sold " + t.shares +
                                 " shares of " + t.stock.symbol +
                                 ". That's all the shares you have.");
                     } else
@@ -164,11 +164,11 @@ class Utils {
                 transactions.add(tokens);
 
                 if(tokens[1].compareTo(t.time) >= 0) {
-                    if (tokens[1].compareTo(t.time) > 0) {
-                        System.out.println("TRADING ERROR: Trade of " + t.stock.symbol +
-                                " ordered at " + t.time + " but first quote is " + tokens[1] + "; " +
-                                "trade will occur at " + tokens[1]);
-                    }
+//                    if (tokens[1].compareTo(t.time) > 0) {
+//                        System.out.println("TRADING ERROR: Trade of " + t.stock.symbol +
+//                                " ordered at " + t.time + " but first quote is " + tokens[1] + "; " +
+//                                "trade will occur at " + tokens[1]);
+//                    }
                     setTradingPrice(tokens, t);
                     bufferedReader.close();
                     return;
@@ -178,7 +178,7 @@ class Utils {
 
         if(transactions.size() == 0 )
         {
-            System.out.print("Could not find transaction:" + t.stock.symbol);
+            System.err.print("Could not find transaction:" + t.stock.symbol);
         }
         else
            // if no transaction at the given time, then go get at the closest time before that

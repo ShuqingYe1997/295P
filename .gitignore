@@ -114,3 +114,4 @@ output/2011-10-buy.txt
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij
 src/test/
+/FinalExe/output/
