@@ -83,6 +83,13 @@ public class FileTXTParser {
         start = "00";
         end = "00";
 
+        // 2001-12-03 is a public holiday
+        if (time.equals("2001-12")) {
+            start = "04";
+            end = "31";
+            return;
+        }
+
         String[] dayList;
         File month_folder = new File(filepath);
 
