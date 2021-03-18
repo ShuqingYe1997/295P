@@ -1,9 +1,9 @@
 # install necessary python libs
-pip3 install --upgrade pip setuptools wheel --user
-pip3 install shap --user
-pip3 install catboost --user
-pip3 install pandas --user
-pip3 install scikit-learn --user
+pip3 install --upgrade pip setuptools wheel --user > /dev/null
+pip3 install shap --user > /dev/null
+pip3 install catboost --user > /dev/null
+pip3 install pandas --user > /dev/null
+pip3 install scikit-learn --user > /dev/null
 
 year=$1
 MONTH_PATH_1=$2
