@@ -178,7 +178,7 @@ class Utils {
 
         if(transactions.size() == 0 )
         {
-            System.err.print("Could not find transaction:" + t.stock.symbol);
+            System.err.println("Could not find transaction:" + t.stock.symbol);
         }
         else
            // if no transaction at the given time, then go get at the closest time before that
