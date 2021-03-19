@@ -14,6 +14,10 @@ import java.util.List;
 class Transaction {
     String date;
     String time;
+    // action == "buy"
+    // action == "sell"
+    // action == "display"
+    // action == "nima"
     String action;
     int shares;
     Stock stock;
@@ -69,17 +73,17 @@ class PortFolio {
     }
 
     // buy
-    public boolean update(Transaction t, double cashBalance) {
+    public boolean update(Transaction t, double cashBalance, int fee) {
         if (t.shares * t.stock.price > cashBalance) {
             System.out.println("TRADING WARNING (not fatal): cash balance $" + String.format("%.2f", cashBalance) +
                     " too small to purchase " + t.shares + " shares of " + t.stock.symbol);
             if(Utils.Force_Trade)
             {
                 // Trading fee has to be included
-                if (cashBalance - Utils.TRANSACTION_FEE <= 0) {
+                if (cashBalance - fee <= 0) {
                     return false;
                 }
-                t.shares = (int)((cashBalance - Utils.TRANSACTION_FEE) / t.stock.price);
+                t.shares = (int)((cashBalance - fee) / t.stock.price);
                 System.out.println("TRADING WARNING (not fatal): Can ONLY Buy " + t.shares + " shares of " + t.stock.symbol);
             }
             else
@@ -125,11 +129,12 @@ class PortFolio {
     }
 
     // 2958 shares of GSS [$1.71] valued at $5043.39
-    public void display() {
+    public void display(String latestDate) {
         for (Transaction t: tradeList) {
             Transaction dis = new Transaction(t);  // make a copy
-            dis.date = tradeList.get(tradeList.size() - 1).date;  // get the  date of the latest transaction
+            dis.date = latestDate;  // get the  date of the latest transaction
             dis.time = "15:59";
+            System.out.println(dis.toString());
             dis.action = "display";
             try {
                 Utils.readStream(this.streamingFolder, dis, year, month);
@@ -150,6 +155,7 @@ class PortFolio {
 class Utils {
     static boolean Force_Trade = true;
     static final int TRANSACTION_FEE = 10;
+    static final int TRANSACTION_FEE_DISCOUNT = 1;
 
     public static void readStream(String directory_date_path, Transaction t, String year, String month) throws Exception{
         String filePath = directory_date_path + "/" + t.date.substring(8) + "/streaming.tsv";;
@@ -178,7 +184,11 @@ class Utils {
 
         if(transactions.size() == 0 )
         {
-            System.err.println("Could not find transaction:" + t.stock.symbol);
+            if (t.action.equals("display")) {
+                t.stock.price = -1;
+            }
+            else
+                t.action = "nima";
         }
         else
            // if no transaction at the given time, then go get at the closest time before that
@@ -227,7 +237,7 @@ class Utils {
             double sum = 0;
             int cnt = 1;
             while (shares > 0) {
-                sum += volume * 0.01 * (currentPrice + cnt * spread);
+                sum += Math.min(volume * 0.01, shares) * (currentPrice + cnt * spread);
                 cnt++;
                 shares -= volume * 0.01;
             }
@@ -252,7 +262,7 @@ class Utils {
         else {
             double bidding = Double.parseDouble(tokens[tokens.length - 2]);
             double asking = Double.parseDouble(tokens[tokens.length - 1]);
-            price = asking;
+            price = bidding;
             spread = (asking - bidding) / 2;
         }
 
@@ -262,7 +272,7 @@ class Utils {
             double sum = 0;
             int cnt = 1;
             while (shares > 0) {
-                sum += volume * 0.01 * (currentPrice - cnt * spread);
+                sum += Math.min(volume * 0.01, shares) * (currentPrice - cnt * spread);
                 cnt++;
                 shares -= volume * 0.01;
             }
@@ -285,6 +295,8 @@ public class Adversary {
     private List<Transaction> inputTradeList;  // 委托
     private PortFolio portfolio;
 
+    private int[] dayTradingCnt;
+
     public Adversary(String streamingMonthFolder, String year, String month, String inputFilename, double cash) {
         this.year = year;
         this.month = month;
@@ -294,6 +306,8 @@ public class Adversary {
 
         this.inputTradeList = new ArrayList<Transaction>();
         this.portfolio = new PortFolio(streamingMonthFolder, year, month);
+
+        this.dayTradingCnt = new int[40];
     }
 
     public void execute() {
@@ -301,13 +315,14 @@ public class Adversary {
             readTrades();
             for (Transaction t: inputTradeList) {
                 Utils.readStream(this.streamingMonthFolder,t, year, month);  // t's time might be changed, price will be set
-                if (t.action.equals("buy")) {
+                if (t.action.equals("buy"))
                     buy(t);
-                }
                 else if (t.action.equals("sell"))
                     sell(t);
+                else if (t.action.equals("nima"))
+                    System.out.println("TRADING WARNING (not fatal): No quotes observed for " + t.stock.symbol);
                 else
-                System.out.println("Syntax error in " + inputFilename + "!!!");
+                    System.out.println("Syntax error in " + inputFilename + "!!!");
             }
             displayAccountStatus();
 
@@ -317,11 +332,18 @@ public class Adversary {
     }
 
     private void buy(Transaction t) {
-        if (!portfolio.update(t, cashBalance))
+        int fee = Utils.TRANSACTION_FEE;
+        if (++dayTradingCnt[Integer.parseInt(t.date.substring(8))] >= 10) {
+            if (dayTradingCnt[Integer.parseInt(t.date.substring(8))] == 10)
+                System.out.println("TRADING INFO: commission on all trades today retroactively dropped to $1");
+            fee = Utils.TRANSACTION_FEE_DISCOUNT;
+        }
+
+        if (!portfolio.update(t, cashBalance, fee))
             return;
 
         double cashSpent = t.shares * t.stock.price;
-        cashBalance -= cashSpent + Utils.TRANSACTION_FEE;
+        cashBalance -= cashSpent + fee;
 
         // 03 15:59 1461 AMSC bought at $3.45; cash spent $5040.45; cash balance $94949.55
         System.out.print(t.toString() + "; ");
@@ -330,11 +352,17 @@ public class Adversary {
     }
 
     private void sell(Transaction t) {
+        int fee = Utils.TRANSACTION_FEE;
+        if (++dayTradingCnt[Integer.parseInt(t.date.substring(8))] >= 10) {
+            if (dayTradingCnt[Integer.parseInt(t.date.substring(8))] == 10)
+                System.out.println("TRADING INFO: commission on all trades today retroactively dropped to $1");
+            fee = Utils.TRANSACTION_FEE_DISCOUNT;
+        }
        if (!portfolio.update(t))
            return;
 
         double cashAcquired = t.shares * t.stock.price;
-        cashBalance += cashAcquired - Utils.TRANSACTION_FEE;
+        cashBalance += cashAcquired - fee;
 
         // 31 15:59 1461 AMSC sold at $4.37; cash acquired $6384.57; cash balance $10258.96
         System.out.print(t.toString() + "; ");
@@ -360,7 +388,10 @@ public class Adversary {
 
     public void displayAccountStatus() {
         System.out.println("Account status: \nCash balance is $" + String.format("%.2f", cashBalance));
-        portfolio.display();
+
+        String latestDate = inputTradeList.get(inputTradeList.size() - 1).date;
+        portfolio.display(latestDate);
+
         System.out.println("TOTAL: $" + String.format("%.2f", cashBalance + portfolio.getTotalValue()));
     }
 
